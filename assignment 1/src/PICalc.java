@@ -29,6 +29,10 @@ public class PICalc implements Runnable
 		if(Thread.currentThread().isInterrupted())
 			System.out.println("Worker interrotto");
 	}
+
+    // MainClass accuracy mseconds
+    // accuracy (double) accuracy 
+    // mseconds (int) tempo in millisecondi
 	public static void main(String[] args)
 	{
 
