@@ -13,7 +13,7 @@ public class Persona implements Runnable
         {
             Long duration = (long)(Math.random()*10);
             System.out.println(Thread.currentThread().getName() + ": Task " + name + " is doing a task during " + duration + " seconds") ;
-            Thread.sleep(duration);
+            Thread.sleep(duration*1000);
         }
         catch(InterruptedException e)
         {
