@@ -31,26 +31,48 @@ public class Reparto implements Runnable
     {
         while(true)
         {
+            System.out.println(redCode.size());
             if(redCode.size() > 0)
             {
+                System.out.println("TEST");
+                //System.out.println(redCode.size()+"test");
                 if(mDisp==10)
                 {
-                    lock.lock();
-                    yourTurn(redCode.get(0));
-                    lock.unlock();
+                    System.out.println("TEST");
+                    try {
+                        lock.lock();
+                        if (redCode.size() > 0) {
+                            System.out.println("SVEGLIA :" + redCode.get(0).name);
+                            yourTurn(redCode.get(0));
+                        }
+                    }
+                    finally
+                    {
+                        lock.unlock();
+                    }
                 }
                 //redCode.remove(1);
             }
             else if(yellowCode.size() > 0)
             {
                 if(mDisp > 0)
-                    yourTurn(yellowCode.get(0));
+                {
+                    lock.lock();
+                    if(yellowCode.size() > 0)
+                        yourTurn(yellowCode.get(0));
+                    lock.unlock();
+                }
                 //yellowCode.remove(1);
             }
             else if(whiteCode.size()>0)
             {
                 if(mDisp > 0)
-                    yourTurn(whiteCode.get(0));
+                {
+                    lock.lock();
+                    if(whiteCode.size()>0)
+                        yourTurn(whiteCode.get(0));
+                    lock.unlock();
+                }
                 //whiteCode.remove(1);
             }
 
@@ -78,7 +100,10 @@ public class Reparto implements Runnable
     {
         lock.lock();
         if(p.getCode().equals("red"))
+        {
+            System.out.println(p.name +"richiesta visita");
             redCode.add(p);
+        }
         if(p.getCode().equals("yellow"))
             yellowCode.add(p);
         if(p.getCode().equals("white"))
@@ -115,6 +140,7 @@ public class Reparto implements Runnable
             {
                 Thread paziente = new Thread(p);
                 paziente.start();
+                //System.out.println("paziente start");
 
             }
             else throw new NullPointerException("check again the arguments");

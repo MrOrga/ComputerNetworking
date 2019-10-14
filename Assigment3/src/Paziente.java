@@ -1,7 +1,7 @@
 
 public class Paziente implements Runnable
 {
-    private String name;
+    protected String name;
     private String codeType;
     private Reparto hosp;
     public Paziente(String name , String codeType ,Reparto hosp)
@@ -12,21 +12,26 @@ public class Paziente implements Runnable
     }
     private void waitTurn()
     {
-        hosp.lock.lock();
+
         try
-        {
+        { hosp.lock.lock();
         if(codeType.equals("red"))
         {
-            //while(hosp.mDisp < 10)
+            while(hosp.mDisp < 10)
+            {
+                System.out.println("SONO IN ATTESA :"+name);
                 hosp.myTurnRed.await();
+            }
         }
         if(codeType.equals("yellow"))
         {
-            hosp.myTurnYellow.await();
+            while(hosp.redCode.size()>0)
+                hosp.myTurnYellow.await();
         }
         if(codeType.equals("white"))
         {
-            hosp.myTurnWhite.await();
+            while(hosp.redCode.size()>0)
+                hosp.myTurnWhite.await();
         }
 
         }
@@ -34,7 +39,10 @@ public class Paziente implements Runnable
         {
             ex.printStackTrace();
         }
-        hosp.lock.unlock();
+        finally
+        {
+            hosp.lock.unlock();
+        }
 
     }
     public String getCode()
@@ -43,27 +51,36 @@ public class Paziente implements Runnable
     }
     private int inizioVisita()
     {
-        hosp.lock.lock();
+
         try {
-            if (this.getCode().equals("red")) {
-                for (int i = 0; i < 10; i++) {
+            hosp.lock.lock();
+            if (this.getCode().equals("red"))
+            {
+                for (int i = 0; i < 10; i++)
+                {
                     hosp.medici[i].lock();
                     hosp.mDisp--;
                 }
                 return 0;
             }
-            if (this.getCode().equals("yellow")) {
+            if (this.getCode().equals("yellow"))
+            {
                 int i = (int) (Math.random() * 10);
                 hosp.medici[i].lock();
                 hosp.mDisp--;
                 return i;
 
             }
-            if (this.getCode().equals("white")) {
+            if (this.getCode().equals("white"))
+            {
                 int i;
-                for (i = 0; i < 10; i++) {
+                for (i = 0; i < 10; i++)
+                {
                     if (hosp.medici[i].tryLock())
+                    {
                         hosp.mDisp--;
+                        return i;
+                    }
                 }
                 return i;
             }
@@ -76,9 +93,10 @@ public class Paziente implements Runnable
     }
     private void fineVisita(int i)
     {
-        hosp.lock.lock();
+
         try
         {
+            hosp.lock.lock();
             if(this.getCode().equals("red"))
             {
                 for(i=0;i < 10; i++)
@@ -104,6 +122,7 @@ public class Paziente implements Runnable
         finally
         {
             hosp.lock.unlock();
+            System.out.println(hosp.redCode.size());
         }
     }
     private void simulateVisit()
@@ -128,7 +147,6 @@ public class Paziente implements Runnable
         int medico=inizioVisita();
         simulateVisit();
         fineVisita(medico);
-
     }
 }
 
