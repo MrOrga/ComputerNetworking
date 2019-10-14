@@ -34,23 +34,26 @@ public class Reparto implements Runnable
             System.out.println(redCode.size());
             if(redCode.size() > 0)
             {
-                System.out.println("TEST");
+                //System.out.println("TEST");
                 //System.out.println(redCode.size()+"test");
-                if(mDisp==10)
+                try
                 {
-                    System.out.println("TEST");
-                    try {
-                        lock.lock();
+                    lock.lock();
+                    if (mDisp == 10) {
+
+                        System.out.println("TEST");
+
                         if (redCode.size() > 0) {
                             System.out.println("SVEGLIA :" + redCode.get(0).name);
                             yourTurn(redCode.get(0));
                         }
                     }
+                }
                     finally
                     {
                         lock.unlock();
                     }
-                }
+
                 //redCode.remove(1);
             }
             else if(yellowCode.size() > 0)

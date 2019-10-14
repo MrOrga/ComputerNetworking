@@ -54,11 +54,13 @@ public class Paziente implements Runnable
 
         try {
             hosp.lock.lock();
+            System.out.println("lock presa"+name);
             if (this.getCode().equals("red"))
             {
                 for (int i = 0; i < 10; i++)
                 {
                     hosp.medici[i].lock();
+                    //System.out.println("lock presa medico"+name);
                     hosp.mDisp--;
                 }
                 return 0;
@@ -144,9 +146,12 @@ public class Paziente implements Runnable
     {
         hosp.richiestaVisita(this);
         waitTurn();
+        System.out.println("inizio visita"+name);
         int medico=inizioVisita();
         simulateVisit();
         fineVisita(medico);
+        System.out.println(hosp.mDisp);
+
     }
 }
 
