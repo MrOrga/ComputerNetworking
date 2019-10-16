@@ -2,7 +2,8 @@ import java.util.concurrent.locks.*;
 import java.util.*;
 public class Reparto implements Runnable
 {
-    protected final Lock [] medici;
+    boolean stop=false;
+    protected boolean [] medici;
     protected Condition myTurnRed;
     protected Condition myTurnYellow;
     protected Condition myTurnWhite;
@@ -13,9 +14,11 @@ public class Reparto implements Runnable
     protected ArrayList<Paziente> whiteCode ;
     public Reparto()
     {
-        this.medici = new ReentrantLock[10];
+    //  this.medici = new ReentrantLock[10];
+    this.medici = new boolean[10];
         for(int i=0;i<10;i++)
-            this.medici[i] = new ReentrantLock();
+            this.medici[i] = true;
+
         this.redCode = new ArrayList<>();
         this.yellowCode = new ArrayList<>();
         this.whiteCode = new ArrayList<>();
@@ -29,56 +32,58 @@ public class Reparto implements Runnable
     @Override
     public void run()
     {
-        while(true)
+        while(!stop)
         {
-            System.out.println(redCode.size());
             if(redCode.size() > 0)
             {
                 //System.out.println("TEST");
                 //System.out.println(redCode.size()+"test");
+                lock.lock();
                 try
                 {
-                    lock.lock();
-                    if (mDisp == 10) {
+                    if(mDisp==10)
+                    {
+                        //System.out.println("TEST");
+                            if (redCode.size() > 0)
+                            {
+                                System.out.println("SVEGLIA :" + redCode.get(0).name);
 
-                        System.out.println("TEST");
-
-                        if (redCode.size() > 0) {
-                            System.out.println("SVEGLIA :" + redCode.get(0).name);
-                            yourTurn(redCode.get(0));
+                                yourTurn(redCode.get(0));
+                            }
                         }
-                    }
                 }
                     finally
                     {
                         lock.unlock();
                     }
-
-                //redCode.remove(1);
             }
             else if(yellowCode.size() > 0)
             {
-                if(mDisp > 0)
-                {
-                    lock.lock();
-                    if(yellowCode.size() > 0)
-                        yourTurn(yellowCode.get(0));
-                    lock.unlock();
+                lock.lock();
+                try {
+                    if (mDisp > 0)
+                    {
+                        if (yellowCode.size() > 0)
+                            yourTurn(yellowCode.get(0));
+                    }
                 }
-                //yellowCode.remove(1);
+                finally{lock.unlock();}
             }
             else if(whiteCode.size()>0)
             {
-                if(mDisp > 0)
-                {
-                    lock.lock();
-                    if(whiteCode.size()>0)
-                        yourTurn(whiteCode.get(0));
-                    lock.unlock();
-                }
-                //whiteCode.remove(1);
-            }
+                lock.lock();
+                try {
+                        if (mDisp > 0) {
 
+                            if (whiteCode.size() > 0)
+                                yourTurn(whiteCode.get(0));
+                        }
+                    }
+                    finally{lock.unlock();}
+            }
+            try
+            { Thread.sleep(100);}
+            catch (InterruptedException ex){stop=true;}
         }
     }
     protected void yourTurn(Paziente p)
@@ -114,40 +119,73 @@ public class Reparto implements Runnable
         lock.unlock();
 
     }
+    public boolean redCanGo()
+    {
+        for(int i=0;i < 10;i++)
+            if(!medici[i])
+                return false;
+        return true;
+    }
+    public boolean yellowCanGo()
+    {
+        for(int i=0;i < 10;i++)
+            if(!medici[i])
+                return false;
+        return true;
+    }
+    public boolean whiteCanGo()
+    {
+        for(int i=0;i < 10;i++)
+            if(!medici[i])
+                return false;
+        return true;
+    }
     // nWhite,nRed,nYellow are parameters of the main and are the respective number of patient with white, yellow and red code
     public static void main (String[] args)
     {
         int nWhite = Integer.parseInt(args[0]);
         int nYellow = Integer.parseInt(args[1]);
         int nRed = Integer.parseInt(args[2]);
-
+        ArrayList<Thread> pt =new ArrayList<>();
         Reparto hosp = new Reparto();
         Thread rep = new Thread(hosp);
+        int term=0;
         rep.start();
         for(int i=0; i < (nRed+nYellow+nWhite); i++)
         {
             Paziente p =null;
+            int k=(int)(Math.random()*3);
             if(i < nRed)
             {
-                p = new Paziente("Paziente "+i,"red",hosp);
+                p = new Paziente("Paziente "+i,"red",hosp,k);
             }
             if(nRed <= i && i < (nRed + nYellow))
             {
-                p = new Paziente("Paziente "+i,"yellow",hosp);
+                p = new Paziente("Paziente "+i,"yellow",hosp,k);
             }
             if((nRed + nYellow) <= i && i < (nRed + nYellow + nWhite))
             {
-                p = new Paziente("Paziente "+i,"white",hosp);
+                p = new Paziente("Paziente "+i,"white",hosp,k);
             }
             if(p!=null)
             {
                 Thread paziente = new Thread(p);
+                pt.add(paziente);
                 paziente.start();
+
                 //System.out.println("paziente start");
 
             }
             else throw new NullPointerException("check again the arguments");
-
         }
+        try
+        {
+            for(int j=0;j < 10;j++)
+            {
+                if(pt.get(j).isAlive())
+                    pt.get(j).join();
+            }
+        }catch (InterruptedException ex){ex.printStackTrace();}
+        rep.interrupt();
     }
 }
