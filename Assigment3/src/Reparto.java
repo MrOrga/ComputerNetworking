@@ -14,7 +14,6 @@ public class Reparto implements Runnable
     protected ArrayList<Paziente> whiteCode ;
     public Reparto()
     {
-    //  this.medici = new ReentrantLock[10];
     this.medici = new boolean[10];
         for(int i=0;i<10;i++)
             this.medici[i] = true;
@@ -32,63 +31,83 @@ public class Reparto implements Runnable
     @Override
     public void run()
     {
-        while(!stop)
+        try
         {
-            if(redCode.size() > 0)
+            while(!stop)
             {
-                //System.out.println("TEST");
-                //System.out.println(redCode.size()+"test");
-                lock.lock();
-                try
+                if(redCode.size() > 0)
                 {
-                    if(mDisp==10)
+                    lock.lock();
+                    try
                     {
-                        //System.out.println("TEST");
-                            if (redCode.size() > 0)
-                            {
-                                System.out.println("SVEGLIA :" + redCode.get(0).name);
-
-                                yourTurn(redCode.get(0));
+                        if(mDisp==10)
+                        {
+                                if (redCode.size() > 0)
+                                {
+                                    //System.out.println("SVEGLIA :" + redCode.get(0).name);
+                                    yourTurn(redCode.get(0));
+                                }
                             }
+                    }
+                        finally
+                        {
+                            lock.unlock();
                         }
                 }
-                    finally
-                    {
-                        lock.unlock();
-                    }
-            }
-            else if(yellowCode.size() > 0)
-            {
-                lock.lock();
-                try {
-                    if (mDisp > 0)
-                    {
-                        if (yellowCode.size() > 0)
-                            yourTurn(yellowCode.get(0));
-                    }
-                }
-                finally{lock.unlock();}
-            }
-            else if(whiteCode.size()>0)
-            {
-                lock.lock();
-                try {
-                        if (mDisp > 0) {
+                else if(yellowCode.size() > 0 && redCode.size()==0)
+                {
+                    lock.lock();
+                    try {
+                        if (mDisp > 0)
+                        {
+                            if (yellowCode.size() > 0)
+                            {
+                               int medFree=medYellowFree();
+                               if(medFree >= 0)
+                                    yourTurn(yellowCode.get(0));
+                                else
+                                {
+                                    if(whiteCode.size() > 0)
+                                    yourTurn(whiteCode.get(0));
+                                }
 
-                            if (whiteCode.size() > 0)
-                                yourTurn(whiteCode.get(0));
+                            }
+                            else if(whiteCode.size() > 0)
+                                {
+                                    yourTurn(whiteCode.get(0));
+                                }
                         }
                     }
                     finally{lock.unlock();}
+                }
+                else if(whiteCode.size()>0)
+                {
+                    lock.lock();
+                    try {
+                            if (mDisp > 0) {
+
+                                if (whiteCode.size() > 0)
+                                    yourTurn(whiteCode.get(0));
+                            }
+                        }
+                        finally{lock.unlock();}
+                }
+                Thread.sleep(100);
             }
-            try
-            { Thread.sleep(100);}
-            catch (InterruptedException ex){stop=true;}
+
+        }catch (InterruptedException ex){stop=true;}
+    }
+    private int medYellowFree()
+    {
+        for (int i=0;i<yellowCode.size();i++)
+        {
+            if(medici[yellowCode.get(i).getMedico()])
+                return yellowCode.get(i).getMedico();
         }
+        return -1;
     }
     protected void yourTurn(Paziente p)
     {
-        //lock.lock();
         if(p.getCode().equals("red"))
         {
             myTurnRed.signal();
@@ -102,7 +121,6 @@ public class Reparto implements Runnable
         {
             myTurnWhite.signal();
         }
-        //lock.unlock();
     }
     protected void richiestaVisita(Paziente p)
     {
@@ -113,7 +131,11 @@ public class Reparto implements Runnable
             redCode.add(p);
         }
         if(p.getCode().equals("yellow"))
+        {
+            int medico = (int) (Math.random() * 10);
+            p.setMedico(medico);
             yellowCode.add(p);
+        }
         if(p.getCode().equals("white"))
             whiteCode.add(p);
         lock.unlock();
@@ -141,6 +163,7 @@ public class Reparto implements Runnable
         return true;
     }
     // nWhite,nRed,nYellow are parameters of the main and are the respective number of patient with white, yellow and red code
+    //Main class nWhite nYellow nRed
     public static void main (String[] args)
     {
         int nWhite = Integer.parseInt(args[0]);
@@ -149,7 +172,6 @@ public class Reparto implements Runnable
         ArrayList<Thread> pt =new ArrayList<>();
         Reparto hosp = new Reparto();
         Thread rep = new Thread(hosp);
-        int term=0;
         rep.start();
         for(int i=0; i < (nRed+nYellow+nWhite); i++)
         {
@@ -172,9 +194,6 @@ public class Reparto implements Runnable
                 Thread paziente = new Thread(p);
                 pt.add(paziente);
                 paziente.start();
-
-                //System.out.println("paziente start");
-
             }
             else throw new NullPointerException("check again the arguments");
         }

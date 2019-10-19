@@ -5,6 +5,7 @@ public class Paziente implements Runnable
     protected String name;
     private String codeType;
     private Reparto hosp;
+    private int medico;
     public Paziente(String name , String codeType ,Reparto hosp,int k)
     {
         this.name = name;
@@ -12,16 +13,26 @@ public class Paziente implements Runnable
         this.hosp = hosp;
         this.k = k;
     }
+
+    public void setMedico(int medico)
+    {
+        this.medico = medico;
+    }
+
+    public int getMedico()
+    {
+        return medico;
+    }
+
     private void waitTurn()
     {
-
+        hosp.lock.lock();
         try
-        { hosp.lock.lock();
+        {
         if(codeType.equals("red"))
         {
             while(!hosp.redCanGo())
             {
-                System.out.println("SONO IN ATTESA :"+name);
                 hosp.myTurnRed.await();
             }
         }
@@ -50,23 +61,20 @@ public class Paziente implements Runnable
     private int inizioVisita()
     {
 
-        try {
-            //hosp.lock.lock();
-            System.out.println("lock presa"+name);
+        try
+        {
             if (this.getCode().equals("red"))
             {
                 for (int i = 0; i < 10; i++)
                 {
                     hosp.medici[i]=false;
-                    //System.out.println("lock presa medico"+name);
                     hosp.mDisp--;
                 }
                 return 0;
             }
             if (this.getCode().equals("yellow"))
             {
-                int i = (int) (Math.random() * 10);
-                while(!hosp.medici[i])
+                while(!hosp.medici[medico])
                 {
                     try
                     {
@@ -74,23 +82,25 @@ public class Paziente implements Runnable
                     }catch (InterruptedException ex) {ex.printStackTrace();}
                 }
 
-                hosp.medici[i]=false;
+                hosp.medici[medico]=false;
                 hosp.mDisp--;
-                return i;
+                return medico;
 
             }
             if (this.getCode().equals("white"))
             {
                 int i;
-                for (i = 0; i < 10; i++)
-                {
-                    if (hosp.medici[i])
+                do {
+                    for (i = 0; i < 10; i++)
                     {
-                        hosp.medici[i]=false;
-                        hosp.mDisp--;
-                        return i;
+                        if (hosp.medici[i])
+                        {
+                            hosp.medici[i] = false;
+                            hosp.mDisp--;
+                            return i;
+                        }
                     }
-                }
+                }while(i==10);
                 return i;
             }
         }
@@ -103,9 +113,10 @@ public class Paziente implements Runnable
     private void fineVisita(int i)
     {
 
+        hosp.lock.lock();
         try
         {
-            hosp.lock.lock();
+
             if(this.getCode().equals("red"))
             {
                 for(i=0;i < 10; i++)
@@ -131,7 +142,6 @@ public class Paziente implements Runnable
         finally
         {
             hosp.lock.unlock();
-            //System.out.println(hosp.redCode.size());
         }
     }
     private void simulateVisit()
@@ -154,16 +164,18 @@ public class Paziente implements Runnable
         hosp.richiestaVisita(this);
         waitTurn();
         System.out.println("inizio visita"+name);
-        int medico=inizioVisita();
+        int med=inizioVisita();
         simulateVisit();
-        fineVisita(medico);
-        System.out.println(hosp.mDisp);
-        System.out.println(hosp.redCode.size());
-        System.out.println(hosp.yellowCode.size());
-        System.out.println(hosp.whiteCode.size());
+        fineVisita(med);
         k--;
         if(k > 0)
         {
+            int att=(int)(Math.random()*5)*1000;
+            try
+            {
+                Thread.sleep(att);
+            }
+            catch (InterruptedException ex){ex.printStackTrace();}
             this.run();
         }
     }
