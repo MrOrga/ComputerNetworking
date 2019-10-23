@@ -14,6 +14,7 @@ public class LinkedListSync
         this.lock = new ReentrantLock();
         emptyQueue = lock.newCondition();
     }
+    //inserimento in coda
     public void addToQueue(String path)
     {
         lock.lock();
@@ -27,6 +28,7 @@ public class LinkedListSync
             lock.unlock();
         }
     }
+    //estrazione dalla coda
     public String getFromQueue()
     {
         lock.lock();
@@ -39,6 +41,7 @@ public class LinkedListSync
             lock.unlock();
         }
     }
+    //funzione che ritorna il primo valore senza rimuoverlo utilizzata per la chiusura dei consumatori
     public String finished()
     {
         lock.lock();
@@ -63,6 +66,7 @@ public class LinkedListSync
             lock.unlock();
         }
     }
+    //attesa su Condizione che ci siano elementi
     public void waitElements()
     {
         lock.lock();

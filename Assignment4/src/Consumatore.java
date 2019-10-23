@@ -2,8 +2,8 @@ import java.io.File;
 
 public class Consumatore implements Runnable
 {
-    LinkedListSync myQueue;
-    boolean running =true;
+    private LinkedListSync myQueue;
+    private boolean running =true;
     Consumatore(LinkedListSync myQueue)
     {
         this.myQueue = myQueue;
@@ -15,9 +15,9 @@ public class Consumatore implements Runnable
         {
             myQueue.waitElements();
 
-            if(myQueue.finished().equals("END"))
+            //condizione chiusura consumatore
+            if(myQueue.finished()==null)
             {
-                System.out.println(Thread.currentThread().getName()+" chiusura thread");
                 running= false;
                 return;
             }

@@ -1,10 +1,13 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class fileCrawler
 {
+
     public static void main(String[] args)
     {
+        //fileCrawler dirPath k
+        //dirPath (String) path delle directory
+        //k(int) numero di consumatori
         String dirPath = args[0];
         int k = Integer.parseInt(args[1]);
         LinkedListSync queue = new LinkedListSync();
@@ -19,16 +22,17 @@ public class fileCrawler
             consThreads.add(consumer);
             consumer.start();
         }
+        //attesa produttore
         try
         {
             if(producer.isAlive())
                 producer.join();
-
-        for(int i=0;i < k;i++)
-        {
-            if (consThreads.get(i).isAlive())
-                consThreads.get(i).join();
-        }
+            //attese consumatori
+            for(int i=0;i < k;i++)
+            {
+                if (consThreads.get(i).isAlive())
+                    consThreads.get(i).join();
+            }
         }catch (InterruptedException ex){ex.printStackTrace();}
 
 

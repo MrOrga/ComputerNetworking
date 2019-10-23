@@ -14,7 +14,8 @@ public class Produttore implements Runnable
     {
         myQueue.addToQueue(path);
         recursiveDir(path);
-        myQueue.addToQueue("END");
+        //inserimento null alla fine della coda per chiusura consumatori
+        myQueue.addToQueue(null);
         myQueue.wakeUpConsumers();
 
 
