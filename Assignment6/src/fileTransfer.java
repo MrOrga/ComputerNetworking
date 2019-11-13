@@ -24,8 +24,9 @@ public class fileTransfer
 	}
 	
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
+		DataOutputStream out = null;
 		try
 		{
 			fileTransfer ft = new fileTransfer();
@@ -49,7 +50,7 @@ public class fileTransfer
 				
 				
 				//handle request
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+				out = new DataOutputStream(socket.getOutputStream());
 				
 				
 				if (!method.equals("GET"))
@@ -60,17 +61,24 @@ public class fileTransfer
 					out.flush();
 				} else
 				{
-					File file = new File(ft.root.toAbsolutePath().toString(), fileRequested);
-					int fileLength = (int) file.length();
-					String contentType = "multipart/form-data";
-					byte[] fileData = readFileData(file, fileLength);
-					out.writeBytes("HTTP/1.1 200 OK\r\n");
-					out.writeBytes("Connection: keep-alive\r\n");
-					out.writeBytes("Date: " + new Date() + "\r\n");
-					out.writeBytes("Content-type: " + contentType + "\r\n");
-					out.writeBytes("Content-length: " + fileLength + "\r\n\r\n");
-					out.write(fileData);
-					out.flush();
+					try
+					{
+						File file = new File(ft.root.toAbsolutePath().toString(), fileRequested);
+						int fileLength = (int) file.length();
+						String contentType = "multipart/form-data";
+						byte[] fileData = readFileData(file, fileLength);
+						out.writeBytes("HTTP/1.1 200 OK\r\n");
+						out.writeBytes("Connection: keep-alive\r\n");
+						out.writeBytes("Date: " + new Date() + "\r\n");
+						//out.writeBytes("Content-type: " + contentType + "\r\n");
+						out.writeBytes("Content-length: " + fileLength + "\r\n\r\n");
+						out.write(fileData);
+						out.flush();
+					} catch (FileNotFoundException ex)
+					{
+						out.writeBytes("HTTP/1.1 404 \r\n\r\n<html><h1>File not found</h1></html>");
+						out.flush();
+					}
 				}
 				
 				
@@ -82,6 +90,7 @@ public class fileTransfer
 		{
 			ex.printStackTrace();
 		}
+		
 		
 	}
 	
