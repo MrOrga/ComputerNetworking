@@ -40,6 +40,7 @@ public class PingClient
 		
 		try
 		{
+			
 			// Create a datagram socket for receiving and sending UDP packets with the port specified as input
 			DatagramSocket socket = new DatagramSocket();
 			int packetreceive = 0;
@@ -64,10 +65,6 @@ public class PingClient
 					// Try to receive the response from the ping
 					socket.receive(response);
 					
-					/*ByteArrayInputStream bain = new ByteArrayInputStream(buffer, 0, request.getLength());
-					DataInputStream dis = new DataInputStream(bain);
-					String pings = dis.readUTF();
-					System.out.println("Server: " + pings);*/
 					// timestamp for when we received the packet
 					int RTT = (int) ((int) new Date().getTime() - timestamp);
 					if (RTT < min)

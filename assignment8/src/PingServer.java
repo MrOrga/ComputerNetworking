@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 public class PingServer
@@ -39,6 +40,15 @@ public class PingServer
 		{
 			System.out.println("ERR -arg 1 is required and need to be a int -arg 2 is optional and need to be a long");
 			return;
+		} else
+		{
+			try
+			{
+				port = Integer.parseInt(args[0]);
+			} catch (NumberFormatException ex)
+			{
+				System.out.println("ERR -arg 1 need to be a int value");
+			}
 		}
 		
 		//rand generator for packet loss
@@ -59,30 +69,28 @@ public class PingServer
 				int clientPort = request.getPort();
 				byte[] buffer = request.getData();
 				
-				//print data and message
-				System.out.println("Ip address client: " + clientHost.getHostAddress() + " port: " + port);
 				
-				ByteArrayInputStream bain = new ByteArrayInputStream(buffer, 0, request.getLength());
-				DataInputStream dis = new DataInputStream(bain);
-				String ping = dis.readUTF();
-				System.out.println("Server: " + ping);
+				String ping = new String(request.getData(), 0, request.getLength(), StandardCharsets.UTF_8);
+				String message = clientHost + ":" + clientPort + ">" + ping + "ACTION:";
 				
 				//reply or simulate loss
 				if (rand.nextDouble() < loss)
 				{
-					System.out.println("Packet loss.");
+					message += " not sent";
+					System.out.println(message);
 					continue;
 				}
 				
 				// Simulate network delay
-				Thread.sleep((int) (rand.nextDouble() * 100));
+				int sleep = (int) (rand.nextDouble() * 100);
+				System.out.println(message + " DELAYED " + sleep + "ms");
+				Thread.sleep(sleep);
 				
 				//send reply
 				
 				DatagramPacket reply = new DatagramPacket(buffer, buffer.length, clientHost, clientPort);
 				socket.send(reply);
 				
-				System.out.println("Reply sent.");
 				
 			}
 		} catch (SocketException ex)
