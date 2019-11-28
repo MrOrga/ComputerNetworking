@@ -41,7 +41,7 @@ public class PingClient
 		try
 		{
 			// Create a datagram socket for receiving and sending UDP packets with the port specified as input
-			DatagramSocket socket = new DatagramSocket(port);
+			DatagramSocket socket = new DatagramSocket();
 			int packetreceive = 0;
 			int packetloss = 0;
 			for (int i = 0; i < 10; i++)
