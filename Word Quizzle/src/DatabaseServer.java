@@ -1,3 +1,11 @@
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -6,12 +14,16 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Exception.*;
+import com.google.gson.Gson;
 
 
 public class DatabaseServer extends RemoteServer implements Database
 {
 	//concurrent hash map per memorizzare user
-	private ConcurrentHashMap<String, User> database;
+	private static ConcurrentHashMap<String, User> database;
+	
+	private static ServerSocketChannel socket;
+	private static Selector selector;
 	
 	public DatabaseServer()
 	{
@@ -54,10 +66,113 @@ public class DatabaseServer extends RemoteServer implements Database
 		user.logout();
 	}
 	
-	public static void main(String[] args) throws RemoteException
+	private void sendResponse(int err)
+	{
+	
+	}
+	
+	private void handleOperation(ByteBuffer buffer)
+	{
+		
+		Gson gson = new Gson();
+		//String json = buffer.toString();
+		String json = new String(buffer.array(), StandardCharsets.UTF_8);
+		System.out.println(json);
+		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
+		//System.out.println(obj.op);
+		//System.out.println(obj.username);
+		//System.out.println(obj.passwd);
+		try
+		{
+			switch (obj.op)
+			{
+				case "login":
+					this.login(obj.username, obj.passwd);
+					break;
+				case "logout":
+					this.logout(obj.username);
+					break;
+				case "addfriend":
+					
+					break;
+				case "friendlist":
+					
+					break;
+				
+			}
+		} catch (UserAlreadyLogged ex)
+		{
+			System.out.println("User already logged");
+		}
+		
+	}
+	
+	private static void write(SelectionKey key) throws IOException
+	{
+		SocketChannel client = (SocketChannel) key.channel();
+		/*ClientState state = (ClientState) key.attachment();
+		ByteBuffer [] toSend = state.toSend.toArray(new ByteBuffer [1]);
+		client.write(toSend);
+		int i = 0;
+		while(i < state.toSend.size())
+		{
+			if(state.toSend.get(i).hasRemaining())
+				break;
+			else
+				state.toSend.remove(i);
+			i++;
+		}
+		if(state.stillToRead)
+			client.register(selector,
+				state.toSend.size() > 0 ?
+					SelectionKey.OP_READ | SelectionKey.OP_WRITE :
+					SelectionKey.OP_READ,
+				state);
+		else if(state.toSend.size() > 0)
+			client.register(selector, SelectionKey.OP_WRITE, state);
+		else
+			client.close();*/
+	}
+	
+	private void read(SelectionKey key) throws IOException
+	{
+		SocketChannel client = (SocketChannel) key.channel();
+		
+		ByteBuffer buffer = ByteBuffer.allocate(512);
+		int read = client.read(buffer);
+		if (read == -1)
+		{
+		
+		} else
+		{
+			buffer.flip();
+			handleOperation(buffer);
+			
+		}
+		//buffer.flip();
+		
+	}
+	
+	private static void accept(SelectionKey key) throws IOException
+	{
+		SocketChannel client = socket.accept();
+		System.out.println("New Client connected");
+		client.configureBlocking(false);
+		//ClientState state = new ClientState();
+		client.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, null);
+	}
+	
+	public static void main(String[] args) throws IOException
+	{
+		DatabaseServer s = new DatabaseServer();
+		s.run();
+	}
+	
+	private void run() throws RemoteException, IOException
 	{
 		
 		int port = 60500;
+		int portTcp = 60501;
 		try
 		{
 			/* Creazione di un'istanza dell'oggetto ServerRMI */
@@ -70,12 +185,43 @@ public class DatabaseServer extends RemoteServer implements Database
 			LocateRegistry.createRegistry(port);
 			Registry r = LocateRegistry.getRegistry(port);
 			/* Pubblicazione dello stub nel registry */
-			r.rebind("DatabaseService", stub);
+			r.rebind(Database.SERVICE_NAME, stub);
 			System.out.println("Server ready");
 		}
 		/* If any communication failures occur... */ catch (RemoteException e)
 		{
 			System.out.println("Communication error " + e.toString());
+		}
+		socket = ServerSocketChannel.open();
+		socket.bind(new InetSocketAddress(portTcp));
+		socket.configureBlocking(false);
+		selector = Selector.open();
+		socket.register(selector, SelectionKey.OP_ACCEPT);
+		while (true)
+		{
+			try
+			{
+				selector.select();
+				for (SelectionKey key : selector.selectedKeys())
+				{
+					if (key.isAcceptable())
+					{
+						accept(key);
+					}
+					if (key.isReadable())
+					{
+						read(key);
+					}
+					if (key.isWritable())
+					{
+						write(key);
+					}
+				}
+				selector.selectedKeys().clear();
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	

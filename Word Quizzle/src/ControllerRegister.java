@@ -21,6 +21,21 @@ public class ControllerRegister
 	@FXML
 	private PasswordField passwd;
 	
+	public void backToHome(ActionEvent event) throws Exception
+	{
+		//load the Register.fxml
+		Parent home = FXMLLoader.load(getClass().getResource("sample.fxml"));
+		
+		//get the Stage from the event
+		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		
+		//Set the Stage
+		primaryStage.setScene(new Scene(home, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Back to home");
+	}
+	
 	public void registerClick(ActionEvent event)
 	{
 		//Register of user in the database using RMI
@@ -35,8 +50,14 @@ public class ControllerRegister
 			String usrname = username.getText();
 			String password = passwd.getText();
 			int result = serverObject.register(usrname, password);
-			System.out.println("Registration user in progess...");
+			
+			System.out.println("Registration user in progress...");
 			System.out.println("Username: " + usrname + " Password: " + password);
+			if (result == 0)
+			{
+				System.out.println("Registration success");
+				backToHome(event);
+			}
 		} catch (Exception e)
 		{
 			System.out.println("Error in invoking object method " + e.toString() + e.getMessage());

@@ -7,17 +7,16 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ControllerRegister">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ControllerLogin">
     <children>
         <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
             <children>
-                <TextField fx:id="username" promptText="username"/>
-                <PasswordField fx:id="passwd" promptText="password"/>
-                <Button mnemonicParsing="false" onAction="#registerClick" text="Register"/>
+                <TextField fx:id="username" focusTraversable="false" promptText="username" />
+                <PasswordField fx:id="passwd" focusTraversable="false" promptText="password" />
+                <Button mnemonicParsing="false" onAction="#loginClick" text="Login" />
             </children>
             <padding>
-                <Insets top="5.0"/>
+                <Insets top="5.0" />
             </padding>
         </VBox>
     </children>

@@ -23,5 +23,19 @@ public class Controller
 		System.out.println("Register click");
 	}
 	
+	public void showLoginClick(ActionEvent event) throws Exception
+	{
+		//load the Register.fxml
+		Parent login = FXMLLoader.load(getClass().getResource("login.fxml"));
+		
+		//get the Stage from the event
+		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		
+		//Set the Stage
+		primaryStage.setScene(new Scene(login, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Login click");
+	}
 	
 }
