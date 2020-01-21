@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class SelectorT implements Runnable
 {
-	private static JsonObj obj;
+	private JsonObj obj;
 	private int portTcp = 60501;
 	
 	public void setObj(JsonObj obj)

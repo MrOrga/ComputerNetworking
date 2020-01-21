@@ -1,4 +1,7 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -17,21 +20,21 @@ import Exception.*;
 import com.google.gson.Gson;
 
 
-public class DatabaseServer extends RemoteServer implements Database
+public class DatabaseServer extends RemoteServer implements Database, Serializable
 {
 	//concurrent hash map per memorizzare user
-	private static ConcurrentHashMap<String, User> database;
+	private ConcurrentHashMap<String, User> database;
 	
 	private static ServerSocketChannel socket;
 	private static Selector selector;
 	
 	public DatabaseServer()
 	{
-		this.database = new ConcurrentHashMap<String, User>();
+		database = new ConcurrentHashMap<String, User>();
 	}
 	
 	@Override
-	public int register(String user, String password) throws UserAlreadyExist, RemoteException
+	public int register(String user, String password) throws UserAlreadyExist, RemoteException, IOException
 	{
 		if (database.containsKey(user))
 			throw new UserAlreadyExist("User già esistente");
@@ -40,11 +43,20 @@ public class DatabaseServer extends RemoteServer implements Database
 		
 		database.put(user, new User(user, password));
 		System.out.println("Register user: " + user + "password: " + password);
+		
+		//saving db into file
+		GsonHandler handler = new GsonHandler();
+		handler.tofile(this, "db.json");
+		
+		
 		return 0;
 	}
 	
-	public void login(String username, String password) throws UserAlreadyLogged, IllegalArgumentException
+	public void login(String username, String password) throws UserAlreadyLogged, IllegalArgumentException, IOException
 	{
+		GsonHandler handler = new GsonHandler();
+		handler.tofile(this, "db.json");
+		System.out.println(username);
 		if (!database.containsKey(username))
 			throw new IllegalArgumentException("Utente o password errati");
 		
@@ -103,6 +115,9 @@ public class DatabaseServer extends RemoteServer implements Database
 		} catch (UserAlreadyLogged ex)
 		{
 			System.out.println("User already logged");
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
 		}
 		
 	}
@@ -162,9 +177,21 @@ public class DatabaseServer extends RemoteServer implements Database
 		client.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, null);
 	}
 	
+	private void saveDatabase(DatabaseServer db)
+	{
+		File file = new File("db.json");
+		
+	}
+	
 	public static void main(String[] args) throws IOException
 	{
-		DatabaseServer s = new DatabaseServer();
+		File db = new File("db.json");
+		GsonHandler handler = new GsonHandler();
+		DatabaseServer s;
+		if (db.exists())
+			s = handler.fromFile(db.getPath());
+		else
+			s = new DatabaseServer();
 		s.run();
 	}
 	

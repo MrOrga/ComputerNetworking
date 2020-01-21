@@ -11,7 +11,7 @@ public class JsonObj
 		this.passwd = passwd;
 	}
 	
-	@Override
+	/*@Override
 	public String toString()
 	{
 		return "JsonObj{" +
@@ -19,5 +19,5 @@ public class JsonObj
 			", username='" + username + '\'' +
 			", passwd='" + passwd + '\'' +
 			'}';
-	}
+	}*/
 }

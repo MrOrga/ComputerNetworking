@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.rmi.*;
 import java.rmi.Remote;
 
@@ -14,7 +15,7 @@ public interface Database extends Remote
 	 * @throws UserAlreadyExist se la sessione scelta è già piena
 	 * @throws RemoteException  se si verifica un errore remoto
 	 */
-	public int register(String user, String password) throws UserAlreadyExist, RemoteException;
+	public int register(String user, String password) throws UserAlreadyExist, RemoteException, IOException;
 	
 }
 
