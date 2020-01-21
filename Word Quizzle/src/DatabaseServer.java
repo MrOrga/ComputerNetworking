@@ -202,11 +202,9 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		int portTcp = 60501;
 		try
 		{
-			/* Creazione di un'istanza dell'oggetto ServerRMI */
-			DatabaseServer srv = new DatabaseServer();
-			//int port = Integer.parseInt(args[0]);
+			
 			/* Esportazione dell'Oggetto */
-			Database stub = (Database) UnicastRemoteObject.exportObject(srv, 0);
+			Database stub = (Database) UnicastRemoteObject.exportObject(this, 0);
 			
 			/* esportazione oggetto che bisogna fare perchè ho scelto di estendere RemoteServer */
 			LocateRegistry.createRegistry(port);

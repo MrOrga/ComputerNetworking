@@ -20,7 +20,11 @@ public class GsonHandler
 		//gson.toJson(db, new FileWriter("C:\\db.json"));...
 		String json = gson.toJson(db);
 		System.out.println(json);
-		gson.toJson(db, new FileWriter(path));
+		FileWriter fileWriter = new FileWriter(path);
+		gson.toJson(db, fileWriter);
+		fileWriter.flush();
+		fileWriter.close();
+		
 	}
 	
 	//restore db from json file
