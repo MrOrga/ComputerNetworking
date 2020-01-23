@@ -1,5 +1,8 @@
 import com.google.gson.Gson;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -12,6 +15,8 @@ public class SelectorT implements Runnable
 {
 	private JsonObj obj;
 	private int portTcp = 60501;
+	private ControllerLogin controllerLogin;
+	private ActionEvent event;
 	
 	public void setObj(JsonObj obj)
 	{
@@ -23,9 +28,11 @@ public class SelectorT implements Runnable
 		return obj;
 	}
 	
-	public SelectorT(JsonObj obj)
+	public SelectorT(JsonObj obj, ControllerLogin controllerLogin, ActionEvent event)
 	{
+		this.controllerLogin = controllerLogin;
 		this.obj = obj;
+		this.event = event;
 	}
 	
 	@Override
@@ -33,6 +40,7 @@ public class SelectorT implements Runnable
 	{
 		try
 		{
+			
 			
 			System.out.println("Thread Selector start");
 			Gson gson = new Gson();
@@ -69,6 +77,18 @@ public class SelectorT implements Runnable
 						if (read == -1)
 							return;
 						buf.flip();
+						
+						//running javafx code to changing scene
+						Platform.runLater(() ->
+						{
+							try
+							{
+								controllerLogin.goToUserHome(event);
+							} catch (Exception e)
+							{
+								e.printStackTrace();
+							}
+						});
 						//System.out.print(new String(buf.array(), 0, buf.limit()));
 						//gestione esito op
 					}

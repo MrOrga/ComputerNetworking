@@ -188,10 +188,13 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		File db = new File("db.json");
 		GsonHandler handler = new GsonHandler();
 		DatabaseServer s;
+		
+		//restoring database from json file
 		if (db.exists())
 			s = handler.fromFile(db.getPath());
 		else
 			s = new DatabaseServer();
+		
 		s.run();
 	}
 	

@@ -21,6 +21,20 @@ public class ControllerLogin
 	@FXML
 	private PasswordField passwd;
 	
+	public void goToUserHome(ActionEvent event) throws Exception
+	{
+		//load the Register.fxml
+		Parent home = FXMLLoader.load(getClass().getResource("userhome.fxml"));
+		
+		//get the Stage from the event
+		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		
+		//Set the Stage
+		primaryStage.setScene(new Scene(home, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Go to User Home");
+	}
 	
 	public void loginClick(ActionEvent event)
 	{
@@ -34,7 +48,7 @@ public class ControllerLogin
 			
 			//Gson gson = new Gson();
 			JsonObj obj = new JsonObj("login", usrname, password);
-			SelectorT selector = new SelectorT(obj);
+			SelectorT selector = new SelectorT(obj, this, event);
 			Thread sel = new Thread(selector);
 			sel.start();
 			System.out.println("Login user in progress...");
