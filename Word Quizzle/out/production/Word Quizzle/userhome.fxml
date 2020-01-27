@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-
 <BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Userhome">
    <top>
       <VBox spacing="10.0" BorderPane.alignment="CENTER">
@@ -17,7 +16,7 @@
             <HBox spacing="10.0">
                <children>
                   <TextField fx:id="username" focusTraversable="false" promptText="Friend Username" />
-                  <Button mnemonicParsing="false" text="ADD FRIEND" />
+                  <Button mnemonicParsing="false" onAction="#addFriendClick" text="ADD FRIEND" />
                   <Region HBox.hgrow="ALWAYS" />
                   <Button layoutX="159.0" layoutY="10.0" mnemonicParsing="false" text="LOGOUT" />
                </children>
@@ -25,7 +24,7 @@
                   <Insets />
                </VBox.margin>
             </HBox>
-            <Button mnemonicParsing="false" text="FRIEND LIST" />
+            <Button mnemonicParsing="false" onAction="#showFriendListClick" text="FRIEND LIST" />
          </children>
          <BorderPane.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

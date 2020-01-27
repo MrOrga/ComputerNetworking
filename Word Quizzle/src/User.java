@@ -6,7 +6,7 @@ public class User
 	private String password;
 	private Vector<String> friend;
 	private int point;
-	private boolean isLogged;
+	private transient boolean isLogged = false;
 	
 	public String getUsername()
 	{
@@ -47,7 +47,6 @@ public class User
 		friend = new Vector<String>();
 		this.username = username;
 		this.password = password;
-		this.isLogged = false;
 		point = 0;
 	}
 	

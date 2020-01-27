@@ -2,7 +2,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
@@ -19,9 +22,9 @@ import com.google.gson.Gson;
 
 public class DatabaseServer extends RemoteServer implements Database, Serializable
 {
-	//concurrent hash map per memorizzare user
+	//concurrent hash map to save user info
 	private ConcurrentHashMap<String, User> database;
-	
+	//socket map to save user info
 	private transient ConcurrentHashMap<String, UserHandler> socketmap;
 	
 	private static ServerSocketChannel socket;
@@ -89,6 +92,8 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 			} else
 			{
 				user.login();
+				//registration of socket in the socketmap
+				socketmap.put(username, new UserHandler(client));
 				sendResponse(new JsonObj("200 OK LOGIN"), client);
 			}
 			
@@ -224,6 +229,18 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	{
 		File file = new File("db.json");
 		
+	}
+	
+	//sending challenge with udp to the user
+	private void challange(Selector selector, String friend, int port) throws IOException
+	{
+		UserHandler handler = socketmap.get(friend);
+		SocketChannel friendSocket = handler.getSocket();
+		InetSocketAddress addressFriend = (InetSocketAddress) (friendSocket.getRemoteAddress());
+		
+		//UDP request
+		
+		DatagramSocket socketUDP = new DatagramSocket(addressFriend.getPort());
 	}
 	
 	public static void main(String[] args) throws IOException

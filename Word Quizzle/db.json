@@ -1,1 +1,1 @@
-{"database":{"a":{"username":"a","password":"a","friend":[],"point":0,"isLogged":false},"b":{"username":"b","password":"b","friend":[],"point":0,"isLogged":false}}}
+{"database":{"a":{"username":"a","password":"a","friend":[],"point":0},"b":{"username":"b","password":"b","friend":[],"point":0},"ciao":{"username":"ciao","password":"ciao","friend":[],"point":0}}}
