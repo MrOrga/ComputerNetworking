@@ -35,6 +35,43 @@ public class SelectorT implements Runnable
 		this.event = event;
 	}
 	
+	//running javafx code to changing scene
+	private void goToUserHome()
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerLogin.goToUserHome(event);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	//handle response from server
+	private void hadleResponse(ByteBuffer buffer)
+	{
+		GsonHandler handler = new GsonHandler();
+		JsonObj obj = handler.readFromGson(buffer);
+		String op = obj.op;
+		
+		//operation login successful
+		if (op.startsWith("200"))
+		{
+			goToUserHome();
+		}
+		//operation error
+		else
+		{
+		
+		}
+		
+		
+	}
+	
 	@Override
 	public void run()
 	{
@@ -43,11 +80,13 @@ public class SelectorT implements Runnable
 			
 			
 			System.out.println("Thread Selector start");
-			Gson gson = new Gson();
+			
 			SocketChannel socket = SocketChannel.open();
 			socket.configureBlocking(false);
 			Selector selector = Selector.open();
+			
 			boolean connected = socket.connect(new InetSocketAddress("localhost", portTcp));
+			Gson gson = new Gson();
 			String json = gson.toJson(obj);
 			System.out.println(json);
 			//String jsend = new String(json, StandardCharsets.UTF_8);
@@ -77,18 +116,8 @@ public class SelectorT implements Runnable
 						if (read == -1)
 							return;
 						buf.flip();
+						hadleResponse(buf);
 						
-						//running javafx code to changing scene
-						Platform.runLater(() ->
-						{
-							try
-							{
-								controllerLogin.goToUserHome(event);
-							} catch (Exception e)
-							{
-								e.printStackTrace();
-							}
-						});
 						//System.out.print(new String(buf.array(), 0, buf.limit()));
 						//gestione esito op
 					}
@@ -100,8 +129,7 @@ public class SelectorT implements Runnable
 						else
 						{
 							socket.register(selector, SelectionKey.OP_READ);
-							socket.shutdownOutput();
-							
+							//socket.shutdownOutput();
 							
 						}
 					}

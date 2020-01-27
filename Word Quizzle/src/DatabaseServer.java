@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -25,21 +22,38 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	//concurrent hash map per memorizzare user
 	private ConcurrentHashMap<String, User> database;
 	
+	private transient ConcurrentHashMap<String, UserHandler> socketmap;
+	
 	private static ServerSocketChannel socket;
 	private static Selector selector;
+	private transient JsonObj obj;
+	private transient ByteBuffer toSend;
 	
 	public DatabaseServer()
 	{
 		database = new ConcurrentHashMap<String, User>();
+		socketmap = new ConcurrentHashMap<String, UserHandler>();
 	}
+	
 	
 	@Override
 	public int register(String user, String password) throws UserAlreadyExist, RemoteException, IOException
 	{
 		if (database.containsKey(user))
-			throw new UserAlreadyExist("User già esistente");
+		{
+			obj = new JsonObj("401 UserAlreadyExist");
+			return -401;
+			//sendResponse(obj);
+			//throw new UserAlreadyExist("User già esistente");
+		}
 		if (password == null)
-			throw new IllegalArgumentException("La password non può essere nulla");
+		{
+			
+			obj = new JsonObj("400 IllegalArgumentException");
+			return -400;
+			//sendResponse(obj);
+			//throw new IllegalArgumentException("La password non può essere nulla");
+		}
 		
 		database.put(user, new User(user, password));
 		System.out.println("Register user: " + user + "password: " + password);
@@ -52,69 +66,106 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		return 0;
 	}
 	
-	public void login(String username, String password) throws UserAlreadyLogged, IllegalArgumentException, IOException
+	public void login(String username, String password, SocketChannel client) throws UserAlreadyLogged, IllegalArgumentException, IOException
 	{
 		GsonHandler handler = new GsonHandler();
 		handler.tofile(this, "db.json");
 		System.out.println(username);
 		if (!database.containsKey(username))
-			throw new IllegalArgumentException("Utente o password errati");
+		{
+			obj = new JsonObj("400 IllegalArgumentException");
+			sendResponse(obj, client);
+			//throw new IllegalArgumentException("Utente o password errati");
+		}
 		
 		User user = database.get(username);
 		if (user.checkpassword(password))
 		{
 			if (user.isLogged())
-				throw new UserAlreadyLogged("Utente già loggato");
-			else
+			{
+				obj = new JsonObj("401 UserAlreadyExist");
+				sendResponse(obj, client);
+				//throw new UserAlreadyLogged("Utente già loggato");
+			} else
+			{
 				user.login();
+				sendResponse(new JsonObj("200 OK LOGIN"), client);
+			}
+			
 		} else
 			throw new IllegalArgumentException("Utente o password errati");
 		
 	}
 	
-	public void logout(String username)
+	public void logout(String username, SocketChannel client) throws IOException
 	{
 		User user = database.get(username);
 		user.logout();
+		sendResponse(new JsonObj("201 OK LOGOUT"), client);
+		//closing conn with client
+		client.shutdownOutput();
 	}
 	
-	private void sendResponse(int err)
+	public void addFriend(String username, String friend, SocketChannel client) throws ClosedChannelException
 	{
-	
+		//check if the user and the user of a friend exist
+		if (!(database.containsKey(username) && database.containsKey(friend)))
+		{
+			sendResponse(new JsonObj("410 User not exist"), client);
+		}
+		
+		//check if the they are already friends
+		User user = database.get(username);
+		if (user.checkFriend(friend))
+		{
+			sendResponse(new JsonObj("411 Already friend"), client);
+		}
+		
+		//setting friendship between user
+		user.setFriend(friend);
+		database.get(friend).setFriend(username);
 	}
 	
-	private void handleOperation(ByteBuffer buffer)
+	private void sendResponse(JsonObj obj, SocketChannel client) throws ClosedChannelException
+	{
+		Gson gson = new Gson();
+		String json = gson.toJson(obj);
+		
+		toSend = ByteBuffer.wrap(json.getBytes());
+		
+		client.register(selector, SelectionKey.OP_WRITE);
+		
+	}
+	
+	private void handleOperation(ByteBuffer buffer, SocketChannel client)
 	{
 		
+		//GsonHandler handler = new GsonHandler();
 		Gson gson = new Gson();
 		//String json = buffer.toString();
 		String json = new String(buffer.array(), StandardCharsets.UTF_8);
 		System.out.println(json);
 		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
-		//System.out.println(obj.op);
-		//System.out.println(obj.username);
-		//System.out.println(obj.passwd);
+		//JsonObj obj = handler.readFromGson(buffer);
+		
 		try
 		{
 			switch (obj.op)
 			{
 				case "login":
-					this.login(obj.username, obj.passwd);
+					this.login(obj.username, obj.passwd, client);
 					break;
 				case "logout":
-					this.logout(obj.username);
+					this.logout(obj.username, client);
 					break;
 				case "addfriend":
-					
+					this.addFriend(obj.username, obj.friend, client);
 					break;
 				case "friendlist":
-					
+					this.friendlist(obj.username, client);
 					break;
 				
 			}
-		} catch (UserAlreadyLogged ex)
-		{
-			System.out.println("User already logged");
 		} catch (Exception ex)
 		{
 			ex.printStackTrace();
@@ -122,31 +173,24 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		
 	}
 	
-	private static void write(SelectionKey key) throws IOException
+	private void friendlist(String username, SocketChannel client)
+	{
+	}
+	
+	private void write(SelectionKey key) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
-		/*ClientState state = (ClientState) key.attachment();
-		ByteBuffer [] toSend = state.toSend.toArray(new ByteBuffer [1]);
+		System.out.println("Sending Response");
+		/*if (toSend == null)
+			sendResponse(new JsonObj("500 OK"), client);*/
 		client.write(toSend);
-		int i = 0;
-		while(i < state.toSend.size())
-		{
-			if(state.toSend.get(i).hasRemaining())
-				break;
-			else
-				state.toSend.remove(i);
-			i++;
-		}
-		if(state.stillToRead)
-			client.register(selector,
-				state.toSend.size() > 0 ?
-					SelectionKey.OP_READ | SelectionKey.OP_WRITE :
-					SelectionKey.OP_READ,
-				state);
-		else if(state.toSend.size() > 0)
-			client.register(selector, SelectionKey.OP_WRITE, state);
+		if (toSend.hasRemaining())
+			client.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 		else
-			client.close();*/
+		{
+			client.register(selector, SelectionKey.OP_READ);
+			//client.shutdownOutput();
+		}
 	}
 	
 	private void read(SelectionKey key) throws IOException
@@ -161,10 +205,9 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		} else
 		{
 			buffer.flip();
-			handleOperation(buffer);
+			handleOperation(buffer, client);
 			
 		}
-		//buffer.flip();
 		
 	}
 	
@@ -174,7 +217,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		System.out.println("New Client connected");
 		client.configureBlocking(false);
 		//ClientState state = new ClientState();
-		client.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, null);
+		client.register(selector, SelectionKey.OP_READ);
 	}
 	
 	private void saveDatabase(DatabaseServer db)
@@ -191,7 +234,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		
 		//restoring database from json file
 		if (db.exists())
-			s = handler.fromFile(db.getPath());
+			s = (DatabaseServer) handler.fromFile(db.getPath());
 		else
 			s = new DatabaseServer();
 		

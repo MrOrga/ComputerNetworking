@@ -18,6 +18,25 @@ public class User
 		this.friend.add(friend);
 	}
 	
+	public Vector<String> getFriend()
+	{
+		return friend;
+	}
+	
+	public int getPoint()
+	{
+		return point;
+	}
+	
+	public boolean checkFriend(String friend)
+	{
+		
+		if (friend.contains(friend))
+			return true;
+		else
+			return false;
+	}
+	
 	public void setPassword(String password)
 	{
 		this.password = password;

@@ -3,6 +3,8 @@ import com.google.gson.Gson;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 
 public class GsonHandler
@@ -30,7 +32,18 @@ public class GsonHandler
 	//restore db from json file
 	public DatabaseServer fromFile(String path) throws IOException
 	{
-		return gson.fromJson(new FileReader(path), DatabaseServer.class);
+		FileReader fileReader = new FileReader(path);
+		DatabaseServer db = gson.fromJson(fileReader, DatabaseServer.class);
+		fileReader.close();
+		return db;
+	}
+	
+	public JsonObj readFromGson(ByteBuffer buffer)
+	{
+		String json = new String(buffer.array(), StandardCharsets.UTF_8);
+		//System.out.println(json);
+		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
+		return obj;
 	}
 }
 
