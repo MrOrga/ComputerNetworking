@@ -34,4 +34,7 @@
    <center>
       <ListView fx:id="friendlist" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </center>
+   <bottom>
+      <Button mnemonicParsing="false" onAction="#challengeClick" text="Challenge" BorderPane.alignment="CENTER" />
+   </bottom>
 </BorderPane>

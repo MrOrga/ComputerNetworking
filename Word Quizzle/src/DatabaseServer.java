@@ -221,7 +221,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 				case "friendlist":
 					this.friendlist(currentUser, client);
 					break;
-				case "challange":
+				case "challenge":
 					this.challenge(friend, client);
 					break;
 				
@@ -351,7 +351,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	//sending challenge with udp to the user
 	private void challenge(String friend, SocketChannel client) throws IOException
 	{
-		
+		System.out.println("sending challenge");
 		UserHandler handler = socketmap.get(currentUser);
 		Gson gson = new Gson();
 		SocketChannel friendSocket = handler.getSocket();
@@ -369,7 +369,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, addressFriend.getPort());
 		
 		socketUDP.send(request);
-		
+		System.out.println("challenge sent");
 		
 	}
 	

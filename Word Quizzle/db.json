@@ -1,1 +1,1 @@
-{"database":{"a":{"username":"a","password":"a","friend":[],"point":0},"b":{"username":"b","password":"b","friend":[],"point":0},"c":{"username":"c","password":"c","friend":[],"point":0},"test":{"username":"test","password":"test","friend":[],"point":0}}}
+{"database":{"a":{"username":"a","password":"a","friend":["b","b"],"point":0},"b":{"username":"b","password":"b","friend":["a","a"],"point":0},"c":{"username":"c","password":"c","friend":[],"point":0},"test":{"username":"test","password":"test","friend":[],"point":0}}}

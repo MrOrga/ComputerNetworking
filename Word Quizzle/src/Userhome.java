@@ -25,6 +25,13 @@ public class Userhome
 		
 	}
 	
+	public void challengeClick(ActionEvent event) throws ClosedChannelException
+	{
+		String friend = friendlist.getSelectionModel().getSelectedItem();
+		JsonObj obj = new JsonObj("challenge", friend);
+		ControllerLogin.sendRequest(obj);
+	}
+	
 	
 	public void showFriend(Vector<String> friend) throws ClosedChannelException
 	{

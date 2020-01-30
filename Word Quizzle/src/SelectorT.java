@@ -51,7 +51,6 @@ public class SelectorT implements Runnable
 	public void sendRequest(JsonObj obj) throws ClosedChannelException
 	{
 		Gson gson = new Gson();
-		System.out.println("CHECK");
 		this.obj = obj;
 		this.obj.setUsername(this.getUsername());
 		String json = gson.toJson(this.obj);
@@ -104,7 +103,7 @@ public class SelectorT implements Runnable
 	}
 	
 	//handle response from server
-	private void hadleResponse(String json)
+	private void hadleResponse(String json) throws IOException
 	{
 		
 		System.out.println(json.trim());
@@ -121,6 +120,15 @@ public class SelectorT implements Runnable
 		{
 			this.setUsername(obj.getUsername());
 			goToUserHome();
+			//show friend list
+			//userhome.showFriend();
+			
+			//start UDP thread listener
+			InetSocketAddress myAddress = (InetSocketAddress) socket.getLocalAddress();
+			
+			UdpListener listener = new UdpListener(myAddress.getPort());
+			listener.start();
+			
 		}
 		if (op.startsWith("202"))
 		{
