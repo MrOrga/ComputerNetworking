@@ -1,9 +1,28 @@
+import java.util.Vector;
+
 public class JsonObj
 {
 	private String op;
 	private String username;
 	private String friend;
 	private String passwd;
+	private Vector<String> friendlist;
+	
+	public JsonObj(String username, Vector<String> friendlist)
+	{
+		this.username = username;
+		this.friendlist = friendlist;
+	}
+	
+	public Vector<String> getFriendlist()
+	{
+		return friendlist;
+	}
+	
+	public void setFriendlist(Vector<String> friendlist)
+	{
+		this.friendlist = friendlist;
+	}
 	
 	public void setPasswd(String passwd)
 	{

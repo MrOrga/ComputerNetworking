@@ -12,17 +12,18 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.Vector;
 
 public class SelectorT implements Runnable
 {
 	private JsonObj obj;
 	private int portTcp = 60501;
 	private ControllerLogin controllerLogin;
+	private Userhome userhome;
 	private ActionEvent event;
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteBuffer toSend;
-	private Gson gson;
 	private String username;
 	
 	public void setObj(JsonObj obj)
@@ -42,15 +43,21 @@ public class SelectorT implements Runnable
 		this.event = event;
 	}
 	
+	public void setUserhome(Userhome userhome)
+	{
+		this.userhome = userhome;
+	}
+	
 	public void sendRequest(JsonObj obj) throws ClosedChannelException
 	{
+		Gson gson = new Gson();
 		System.out.println("CHECK");
 		this.obj = obj;
 		this.obj.setUsername(this.getUsername());
 		String json = gson.toJson(this.obj);
 		toSend = ByteBuffer.wrap(json.getBytes());
 		
-		socket.register(selector, SelectionKey.OP_WRITE);
+		socket.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
 		selector.wakeup();
 		
 	}
@@ -71,6 +78,21 @@ public class SelectorT implements Runnable
 		});
 	}
 	
+	//show friend list
+	private void showFriendList(Vector<String> friendlist)
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.showFriend(friendlist);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	public String getUsername()
 	{
 		return username;
@@ -84,9 +106,14 @@ public class SelectorT implements Runnable
 	//handle response from server
 	private void hadleResponse(String json)
 	{
-		System.out.println(json);
+		
+		System.out.println(json.trim());
 		Gson gson = new Gson();
 		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
+		
+		//some problem with gson function
+		if (obj == null)
+			return;
 		String op = obj.getOp();
 		
 		//operation login successful
@@ -99,6 +126,11 @@ public class SelectorT implements Runnable
 		{
 			//this.setUsername(obj.getUsername());
 			System.out.println("Friend added");
+		}
+		if (op.startsWith("203"))
+		{
+			
+			showFriendList(obj.getFriendlist());
 		}
 		//operation error
 		else
@@ -124,7 +156,7 @@ public class SelectorT implements Runnable
 			selector = Selector.open();
 			
 			boolean connected = socket.connect(new InetSocketAddress(InetAddress.getLocalHost(), portTcp));
-			gson = new Gson();
+			Gson gson = new Gson();
 			String json = gson.toJson(obj);
 			System.out.println(json);
 			//String jsend = new String(json, StandardCharsets.UTF_8);
@@ -149,6 +181,7 @@ public class SelectorT implements Runnable
 					}
 					if (key.isReadable())
 					{
+						System.out.println("Reading some message from Server");
 						/*String res = "";
 						ByteBuffer buf = ByteBuffer.allocate(512);
 						if (key.attachment() != null)

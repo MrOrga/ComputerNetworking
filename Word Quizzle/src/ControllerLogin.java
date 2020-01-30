@@ -28,6 +28,11 @@ public class ControllerLogin
 		selector.sendRequest(obj);
 	}
 	
+	public static void setUserHome(Userhome userhome) throws ClosedChannelException
+	{
+		selector.setUserhome(userhome);
+	}
+	
 	public void goToUserHome(ActionEvent event) throws Exception
 	{
 		//load the Register.fxml
@@ -36,7 +41,7 @@ public class ControllerLogin
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		
-		//Set the Stage
+		//Set the Scene
 		primaryStage.setScene(new Scene(home, 800, 600));
 		primaryStage.show();
 		

@@ -12,6 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Exception.*;
@@ -132,7 +133,8 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		} else
 		{
 			//setting friendship between user
-			user.setFriend(friend);
+			database.get(username).setFriend(friend);
+			//user.setFriend(friend);
 			database.get(friend).setFriend(username);
 			sendResponse(new JsonObj("202 User added to friend list"), client);
 		}
@@ -231,8 +233,17 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		
 	}
 	
-	private void friendlist(String username, SocketChannel client)
+	private void friendlist(String username, SocketChannel client) throws ClosedChannelException
 	{
+		Gson gson = new Gson();
+		Vector<String> friend = database.get(username).getFriend();
+		JsonObj obj1 = new JsonObj("203 showfriendlist");
+		obj1.setFriendlist(friend);
+		String json = gson.toJson(obj);
+		/*ByteBuffer toSend = ByteBuffer.wrap(json.getBytes());
+		socketmap.get(username).setToSend(toSend);*/
+		sendResponse(obj1, client);
+		
 	}
 	
 	private void write(SelectionKey key) throws IOException

@@ -31,7 +31,7 @@ public class User
 	public boolean checkFriend(String friend)
 	{
 		
-		if (friend.contains(friend))
+		if (username.contains(friend))
 			return true;
 		else
 			return false;
