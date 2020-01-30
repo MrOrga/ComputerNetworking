@@ -1,9 +1,49 @@
 public class JsonObj
 {
-	public String op;
-	public String username;
-	public String friend;
-	public String passwd;
+	private String op;
+	private String username;
+	private String friend;
+	private String passwd;
+	
+	public void setPasswd(String passwd)
+	{
+		this.passwd = passwd;
+	}
+	
+	public String getPasswd()
+	{
+		return passwd;
+	}
+	
+	public String getOp()
+	{
+		return op;
+	}
+	
+	public void setOp(String op)
+	{
+		this.op = op;
+	}
+	
+	public String getUsername()
+	{
+		return username;
+	}
+	
+	public void setUsername(String username)
+	{
+		this.username = username;
+	}
+	
+	public String getFriend()
+	{
+		return friend;
+	}
+	
+	public void setFriend(String friend)
+	{
+		this.friend = friend;
+	}
 	
 	public JsonObj(String op, String username, String passwd)
 	{
@@ -26,7 +66,12 @@ public class JsonObj
 		
 	}
 	
-	/*@Override
+	public JsonObj(String op, String friend)
+	{
+		this.op = op;
+		this.friend = friend;
+	}
+/*@Override
 	public String toString()
 	{
 		return "JsonObj{" +

@@ -40,10 +40,12 @@ public class GsonHandler
 	
 	public JsonObj readFromGson(ByteBuffer buffer)
 	{
+		System.out.println("readfromGson");
+		buffer.flip();
 		String json = new String(buffer.array(), StandardCharsets.UTF_8);
-		//System.out.println(json);
-		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
-		return obj;
+		System.out.println(json);
+		
+		return gson.fromJson(json.trim(), JsonObj.class);
 	}
 }
 

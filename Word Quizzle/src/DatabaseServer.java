@@ -2,10 +2,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.*;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
@@ -24,17 +22,21 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 {
 	//concurrent hash map to save user info
 	private ConcurrentHashMap<String, User> database;
+	
 	//socket map to save user info
 	private transient ConcurrentHashMap<String, UserHandler> socketmap;
+	//private transient ConcurrentHashMap<SocketChannel, UserHandler> socketmap;
 	
 	private static ServerSocketChannel socket;
 	private static Selector selector;
 	private transient JsonObj obj;
-	private transient ByteBuffer toSend;
+	private transient String currentUser;
+	//private ByteBuffer toSend;
 	
 	public DatabaseServer()
 	{
 		database = new ConcurrentHashMap<String, User>();
+		//socketmap = new ConcurrentHashMap<SocketChannel, UserHandler>();
 		socketmap = new ConcurrentHashMap<String, UserHandler>();
 	}
 	
@@ -45,9 +47,10 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		if (database.containsKey(user))
 		{
 			obj = new JsonObj("401 UserAlreadyExist");
+			//throw new UserAlreadyExist("User già esistente");
 			return -401;
 			//sendResponse(obj);
-			//throw new UserAlreadyExist("User già esistente");
+			
 		}
 		if (password == null)
 		{
@@ -93,8 +96,10 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 			{
 				user.login();
 				//registration of socket in the socketmap
-				socketmap.put(username, new UserHandler(client));
-				sendResponse(new JsonObj("200 OK LOGIN"), client);
+				socketmap.put(username, new UserHandler(client, username));
+				JsonObj obj1 = new JsonObj("200 OK LOGIN");
+				obj1.setUsername(username);
+				sendResponse(obj1, client);
 			}
 			
 		} else
@@ -124,25 +129,27 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		if (user.checkFriend(friend))
 		{
 			sendResponse(new JsonObj("411 Already friend"), client);
+		} else
+		{
+			//setting friendship between user
+			user.setFriend(friend);
+			database.get(friend).setFriend(username);
+			sendResponse(new JsonObj("202 User added to friend list"), client);
 		}
-		
-		//setting friendship between user
-		user.setFriend(friend);
-		database.get(friend).setFriend(username);
 	}
 	
 	private void sendResponse(JsonObj obj, SocketChannel client) throws ClosedChannelException
 	{
 		Gson gson = new Gson();
 		String json = gson.toJson(obj);
-		
-		toSend = ByteBuffer.wrap(json.getBytes());
+		System.out.println(json);
+		socketmap.get(currentUser).setToSend(ByteBuffer.wrap(json.getBytes()));
 		
 		client.register(selector, SelectionKey.OP_WRITE);
 		
 	}
 	
-	private void handleOperation(ByteBuffer buffer, SocketChannel client)
+	/*private void handleOperation(ByteBuffer buffer, SocketChannel client)
 	{
 		
 		//GsonHandler handler = new GsonHandler();
@@ -152,22 +159,68 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		System.out.println(json);
 		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
 		//JsonObj obj = handler.readFromGson(buffer);
-		
+		currentUser=obj.getUsername();
+		String passwd=obj.getPasswd();
+		String friend =obj.getFriend();
 		try
 		{
-			switch (obj.op)
+			switch (obj.getOp())
 			{
 				case "login":
-					this.login(obj.username, obj.passwd, client);
+					this.login(currentUser, passwd, client);
 					break;
 				case "logout":
-					this.logout(obj.username, client);
+					this.logout(currentUser, client);
 					break;
 				case "addfriend":
-					this.addFriend(obj.username, obj.friend, client);
+					this.addFriend(currentUser, friend, client);
 					break;
 				case "friendlist":
-					this.friendlist(obj.username, client);
+					this.friendlist(currentUser, client);
+					break;
+				case "challange":
+					this.challange(friend,client);
+					break;
+				
+			}
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+	}*/
+	
+	private void handleOperation(String json, SocketChannel client)
+	{
+		
+		//GsonHandler handler = new GsonHandler();
+		Gson gson = new Gson();
+		//String json = buffer.toString();
+		//*String json = new String(buffer.array(), StandardCharsets.UTF_8);*//
+		System.out.println(json);
+		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
+		//JsonObj obj = handler.readFromGson(buffer);
+		currentUser = obj.getUsername();
+		String passwd = obj.getPasswd();
+		String friend = obj.getFriend();
+		try
+		{
+			switch (obj.getOp())
+			{
+				case "login":
+					this.login(currentUser, passwd, client);
+					break;
+				case "logout":
+					this.logout(currentUser, client);
+					break;
+				case "addfriend":
+					this.addFriend(currentUser, friend, client);
+					break;
+				case "friendlist":
+					this.friendlist(currentUser, client);
+					break;
+				case "challange":
+					this.challenge(friend, client);
 					break;
 				
 			}
@@ -185,12 +238,25 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	private void write(SelectionKey key) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
+		ByteBuffer toSend = socketmap.get(currentUser).getToSend();
 		System.out.println("Sending Response");
-		/*if (toSend == null)
-			sendResponse(new JsonObj("500 OK"), client);*/
+		
+		//if is the first write sending the lenght of obj
+		if (toSend.position() == 0)
+		{
+			int len = toSend.array().length;
+			//len of int value
+			int intlen = String.valueOf(len).length();
+			//int totlen = len + intlen;
+			ByteBuffer bufflen = ByteBuffer.allocate(len);
+			bufflen.putInt(len);
+			//bufflen.flip();
+			client.write(bufflen);
+		}
 		client.write(toSend);
 		if (toSend.hasRemaining())
 			client.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+		
 		else
 		{
 			client.register(selector, SelectionKey.OP_READ);
@@ -201,19 +267,59 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	private void read(SelectionKey key) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
-		
-		ByteBuffer buffer = ByteBuffer.allocate(512);
-		int read = client.read(buffer);
+		//ByteBuffer toSend = socketmap.get(client).getToSend();
+		ByteBuffer buf = ByteBuffer.allocate(512);
+		buf.clear();
+		Attachment attachment = null;
+		String res = "";
+		int len = 0;
+		if (key.attachment() != null)
+		{
+			attachment = (Attachment) key.attachment();
+			len = attachment.getLen();
+		}
+		int read = client.read(buf);
+		buf.flip();
+		//some error
 		if (read == -1)
-		{
+			return;
 		
-		} else
+		
+		if (attachment == null)
 		{
-			buffer.flip();
-			handleOperation(buffer, client);
-			
+			len = buf.getInt();
 		}
 		
+		
+		//System.out.println(len);
+		if (key.attachment() == null)
+		{
+			res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
+			attachment = new Attachment(res, len, len - read - (String.valueOf(len).length()));
+			if (len <= buf.remaining())
+				handleOperation(res, client);
+			else
+				client.register(selector, SelectionKey.OP_READ, attachment);
+			
+		} else
+		{
+			if (key.attachment() != null)
+			{
+				res = attachment.getRes() + new String(buf.array(), StandardCharsets.UTF_8);
+				
+				attachment = new Attachment(res, len, attachment.getLeft() - read);
+				if (attachment.getLeft() > 0)
+					
+					client.register(selector, SelectionKey.OP_READ, attachment);
+				else
+				{
+					handleOperation(res, client);
+				}
+				
+			}
+			
+			
+		}
 	}
 	
 	private static void accept(SelectionKey key) throws IOException
@@ -232,15 +338,28 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	}
 	
 	//sending challenge with udp to the user
-	private void challange(Selector selector, String friend, int port) throws IOException
+	private void challenge(String friend, SocketChannel client) throws IOException
 	{
-		UserHandler handler = socketmap.get(friend);
+		
+		UserHandler handler = socketmap.get(currentUser);
+		Gson gson = new Gson();
 		SocketChannel friendSocket = handler.getSocket();
 		InetSocketAddress addressFriend = (InetSocketAddress) (friendSocket.getRemoteAddress());
+		InetAddress address = addressFriend.getAddress();
 		
 		//UDP request
 		
-		DatagramSocket socketUDP = new DatagramSocket(addressFriend.getPort());
+		DatagramSocket socketUDP = new DatagramSocket();
+		
+		//setting challange request
+		obj = new JsonObj("challenge", friend);
+		String json = gson.toJson(obj);
+		
+		DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, addressFriend.getPort());
+		
+		socketUDP.send(request);
+		
+		
 	}
 	
 	public static void main(String[] args) throws IOException

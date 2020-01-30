@@ -20,6 +20,13 @@ public class ControllerLogin
 	private TextField username;
 	@FXML
 	private PasswordField passwd;
+	//public static Thread sel;
+	private static SelectorT selector;
+	
+	public static void sendRequest(JsonObj obj) throws ClosedChannelException
+	{
+		selector.sendRequest(obj);
+	}
 	
 	public void goToUserHome(ActionEvent event) throws Exception
 	{
@@ -48,7 +55,7 @@ public class ControllerLogin
 			
 			//Gson gson = new Gson();
 			JsonObj obj = new JsonObj("login", usrname, password);
-			SelectorT selector = new SelectorT(obj, this, event);
+			selector = new SelectorT(obj, this, event);
 			Thread sel = new Thread(selector);
 			sel.start();
 			System.out.println("Login user in progress...");

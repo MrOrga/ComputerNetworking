@@ -53,6 +53,7 @@ public class ControllerRegister
 			
 			System.out.println("Registration user in progress...");
 			System.out.println("Username: " + usrname + " Password: " + password);
+			System.out.println(result);
 			if (result == 0)
 			{
 				System.out.println("Registration success");
