@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
@@ -20,6 +17,12 @@ public class SelectorT implements Runnable
 	private int portTcp = 60501;
 	private ControllerLogin controllerLogin;
 	private Userhome userhome;
+	
+	public void setEvent(ActionEvent event)
+	{
+		this.event = event;
+	}
+	
 	private ActionEvent event;
 	private Selector selector;
 	private SocketChannel socket;
@@ -77,6 +80,21 @@ public class SelectorT implements Runnable
 		});
 	}
 	
+	private void goToHome()
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerLogin.goToHome(event);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	//show friend list
 	private void showFriendList(Vector<String> friendlist)
 	{
@@ -85,6 +103,20 @@ public class SelectorT implements Runnable
 			try
 			{
 				userhome.showFriend(friendlist);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	private void showFriendListAfter()
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.showFriendListClick();
 			} catch (Exception e)
 			{
 				e.printStackTrace();
@@ -109,10 +141,14 @@ public class SelectorT implements Runnable
 		System.out.println(json.trim());
 		Gson gson = new Gson();
 		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
-		
 		//some problem with gson function
-		if (obj == null)
-			return;
+		while (obj == null)
+		{
+			//JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
+			
+			/*socket.register(selector, SelectionKey.OP_READ);
+			return;*/
+		}
 		String op = obj.getOp();
 		
 		//operation login successful
@@ -134,11 +170,19 @@ public class SelectorT implements Runnable
 		{
 			//this.setUsername(obj.getUsername());
 			System.out.println("Friend added");
+			showFriendListAfter();
 		}
 		if (op.startsWith("203"))
 		{
 			
 			showFriendList(obj.getFriendlist());
+		}
+		if (op.startsWith("204"))
+		{
+			socket.close();
+			this.setUsername("");
+			goToHome();
+			
 		}
 		//operation error
 		else
@@ -235,13 +279,14 @@ public class SelectorT implements Runnable
 						{
 							len = buf.getInt();
 						}
-						
+						if (read < len && len < 512)
+							read += client.read(buf);
 						
 						//System.out.println(len);
 						if (key.attachment() == null)
 						{
-							res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
-							attachment = new Attachment(res, len, len - read - (String.valueOf(len).length()));
+							res = new String(buf.array(), 4, buf.remaining(), StandardCharsets.UTF_8);
+							attachment = new Attachment(res, len, len - (read));
 							if (len <= buf.remaining())
 								hadleResponse(res);
 							else
@@ -309,8 +354,10 @@ public class SelectorT implements Runnable
 				}
 				selector.selectedKeys().clear();
 			}
-		} catch (
-			Exception ex)
+		} catch (CancelledKeyException ex)
+		{
+			selector.selectedKeys().clear();
+		} catch (Exception ex)
 		
 		{
 			ex.printStackTrace();

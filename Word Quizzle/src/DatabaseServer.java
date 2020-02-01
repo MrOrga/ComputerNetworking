@@ -76,7 +76,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	public void login(String username, String password, SocketChannel client) throws UserAlreadyLogged, IllegalArgumentException, IOException
 	{
 		GsonHandler handler = new GsonHandler();
-		handler.tofile(this, "db.json");
+		
 		System.out.println(username);
 		if (!database.containsKey(username))
 		{
@@ -101,6 +101,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 				JsonObj obj1 = new JsonObj("200 OK LOGIN");
 				obj1.setUsername(username);
 				sendResponse(obj1, client);
+				handler.tofile(this, "db.json");
 			}
 			
 		} else
@@ -112,31 +113,37 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	{
 		User user = database.get(username);
 		user.logout();
-		sendResponse(new JsonObj("201 OK LOGOUT"), client);
+		sendResponse(new JsonObj("204 OK LOGOUT"), client);
 		//closing conn with client
-		client.shutdownOutput();
+		//client.shutdownOutput();
 	}
 	
-	public void addFriend(String username, String friend, SocketChannel client) throws ClosedChannelException
+	public void addFriend(String username, String friend, SocketChannel client) throws IOException
 	{
 		//check if the user and the user of a friend exist
-		if (!(database.containsKey(username) && database.containsKey(friend)))
+		if ((!database.containsKey(username) || !(database.containsKey(friend))))
 		{
 			sendResponse(new JsonObj("410 User not exist"), client);
-		}
-		
-		//check if the they are already friends
-		User user = database.get(username);
-		if (user.checkFriend(friend))
-		{
-			sendResponse(new JsonObj("411 Already friend"), client);
+			
 		} else
 		{
-			//setting friendship between user
-			database.get(username).setFriend(friend);
-			//user.setFriend(friend);
-			database.get(friend).setFriend(username);
-			sendResponse(new JsonObj("202 User added to friend list"), client);
+			if (database.get(username).checkFriend(friend) || database.get(friend).checkFriend(username))
+			{
+				sendResponse(new JsonObj("411 Already friend"), client);
+				
+			}
+			
+			//check if the they are already friends
+			else
+			{
+				//setting friendship between user
+				database.get(username).setFriend(friend);
+				//user.setFriend(friend);
+				database.get(friend).setFriend(username);
+				sendResponse(new JsonObj("202 User added to friend list"), client);
+				GsonHandler handler = new GsonHandler();
+				handler.tofile(this, "db.json");
+			}
 		}
 	}
 	
@@ -260,8 +267,9 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 			int intlen = String.valueOf(len).length();
 			//int totlen = len + intlen;
 			ByteBuffer bufflen = ByteBuffer.allocate(len);
+			bufflen.clear();
 			bufflen.putInt(len);
-			//bufflen.flip();
+			bufflen.flip();
 			client.write(bufflen);
 		}
 		client.write(toSend);

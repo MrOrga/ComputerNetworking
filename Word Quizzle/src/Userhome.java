@@ -15,12 +15,13 @@ public class Userhome
 	private ListView<String> friendlist;
 	
 	
-	public void addFriendClick(ActionEvent event) throws ClosedChannelException
+	public void addFriendClick() throws ClosedChannelException
 	{
 		String friend = username.getText();
 		JsonObj obj = new JsonObj("addfriend", friend);
 		ControllerLogin.sendRequest(obj);
 		username.clear();
+		ControllerLogin.setUserHome(this);
 		//SelectorT
 		
 	}
@@ -41,19 +42,22 @@ public class Userhome
 		
 		friendlist.getItems().clear();
 		friendlist.getItems().addAll(friend);
+		friendlist.setVisible(true);
 		System.out.println("friendlist show");
 	}
 	
-	public void showFriendListClick(ActionEvent event) throws ClosedChannelException
+	public void showFriendListClick() throws ClosedChannelException
 	{
 		JsonObj obj = new JsonObj("friendlist");
 		ControllerLogin.sendRequest(obj);
 		ControllerLogin.setUserHome(this);
 	}
 	
-	public void logoutClick(ActionEvent event)
+	public void logoutClick(ActionEvent event) throws ClosedChannelException
 	{
-	
+		JsonObj obj = new JsonObj("logout");
+		ControllerLogin.sendRequest(obj);
+		ControllerLogin.setEvent(event);
 	}
 	
 	

@@ -11,6 +11,20 @@
           -fx-effect: dropshadow(one-pass-box, black, 14, 0.0 , 6, 0);
 
 }
+
+
+.button.black
+{
+          -fx-opacity: 1;
+          -fx-font: 24px "Calibri";
+          -fx-font-weight:bold;
+          -fx-background-color: #e50914;
+          -fx-text-fill:#ffffff;
+          -fx-padding: 8;
+          -fx-background-radius:5;
+          -fx-effect: dropshadow(one-pass-box, black, 14, 0.0 , 6, 0);
+
+}
 .button:hover
 {
     -fx-scale-x: 1.2;
@@ -26,8 +40,55 @@
 {
     -fx-text-color:#ffffff;
     //-fx-opacity: 0.7;
-    -fx-background-color: rgba(0, 0, 0, 0.85);;
+    -fx-background-color: rgba(0, 0, 0, 0.85);
     -fx-padding: 10;
     -fx-background-radius:5;
     -fx-text-fill:#ffffff;
+}
+.background{
+    -fx-text-color:#ffffff;
+    //-fx-opacity: 0.7;
+    -fx-background-color: rgba(0, 0, 0, 1);
+    //-fx-background-color: :#ffffff;
+    -fx-padding: 10;
+    -fx-text-fill:#ffffff;
+}
+.top
+{
+    -fx-background-color: #3f4245;
+     -fx-padding: 10;
+     -fx-background-radius:5;
+     -fx-text-fill:#ffffff;
+}
+
+.center
+{
+    -fx-background-color:  #181a1b;
+    -fx-padding: 10;
+    -fx-background-radius:5;
+    -fx-text-fill:#ffffff;
+}
+.bottom{
+     -fx-background-color: #333;
+     -fx-padding: 10;
+     -fx-background-radius:5;
+     -fx-text-fill:#ffffff;
+}
+.list-cell
+{
+    -fx-font: 16px "Calibri";
+     //-fx-spacing:
+     -fx-background-color:  #181a1b;
+     -fx-padding: 5;
+     -fx-background-radius:5;
+     -fx-text-fill:#ffffff;
+}
+.list-cell:selected
+{
+     -fx-background-color: #3f4245;
+}
+
+.list-cell:hover
+{
+     -fx-background-color: #333;
 }

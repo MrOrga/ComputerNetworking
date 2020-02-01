@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -27,6 +28,10 @@ public class ControllerLogin
 	//public static Thread sel;
 	private static SelectorT selector;
 	
+	public static void setEvent(ActionEvent event)
+	{
+		selector.setEvent(event);
+	}
 	
 	public void setPane(AnchorPane pane)
 	{
@@ -66,6 +71,21 @@ public class ControllerLogin
 		primaryStage.show();
 		
 		System.out.println("Go to User Home");
+	}
+	
+	public void goToHome(ActionEvent event) throws Exception
+	{
+		//load the Register.fxml
+		Parent home = FXMLLoader.load(getClass().getResource("sample.fxml"));
+		
+		//get the Stage from the event
+		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		
+		//Set the Scene
+		primaryStage.setScene(new Scene(home, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Go to Home");
 	}
 	
 	public void loginClick(ActionEvent event)
