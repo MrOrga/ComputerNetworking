@@ -1,6 +1,7 @@
 import javafx.event.ActionEvent;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -9,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -20,6 +22,24 @@ public class ControllerRegister
 	private TextField username;
 	@FXML
 	private PasswordField passwd;
+	@FXML
+	private AnchorPane pane;
+	
+	public void setPane(AnchorPane pane)
+	{
+		this.pane = pane;
+	}
+	
+	public void goToLogin() throws IOException
+	{
+		
+		//pane = Controller.getPane();
+		FXMLLoader load = new FXMLLoader(getClass().getResource("login.fxml"));
+		AnchorPane newPane = load.load();
+		ControllerLogin c = load.getController();
+		c.setPane(pane);
+		pane.getChildren().setAll(newPane);
+	}
 	
 	public void backToHome(ActionEvent event) throws Exception
 	{

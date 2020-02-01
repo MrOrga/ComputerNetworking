@@ -7,6 +7,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -20,8 +22,26 @@ public class ControllerLogin
 	private TextField username;
 	@FXML
 	private PasswordField passwd;
+	@FXML
+	public AnchorPane pane;
 	//public static Thread sel;
 	private static SelectorT selector;
+	
+	
+	public void setPane(AnchorPane pane)
+	{
+		this.pane = pane;
+	}
+	
+	public void backToRegister() throws IOException
+	{
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("Register2.fxml"));
+		AnchorPane newPane = loader.load();
+		ControllerRegister c = loader.getController();
+		c.setPane(pane);
+		
+		pane.getChildren().setAll(newPane);
+	}
 	
 	public static void sendRequest(JsonObj obj) throws ClosedChannelException
 	{

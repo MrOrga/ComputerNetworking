@@ -352,21 +352,23 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	private void challenge(String friend, SocketChannel client) throws IOException
 	{
 		System.out.println("sending challenge");
-		UserHandler handler = socketmap.get(currentUser);
+		UserHandler handler = socketmap.get(friend);
 		Gson gson = new Gson();
 		SocketChannel friendSocket = handler.getSocket();
 		InetSocketAddress addressFriend = (InetSocketAddress) (friendSocket.getRemoteAddress());
 		InetAddress address = addressFriend.getAddress();
+		int port = addressFriend.getPort();
 		
+		System.out.println("UDP port client: " + port);
 		//UDP request
 		
 		DatagramSocket socketUDP = new DatagramSocket();
 		
 		//setting challange request
-		obj = new JsonObj("challenge", friend);
+		obj = new JsonObj("challenge", currentUser);
 		String json = gson.toJson(obj);
 		
-		DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, addressFriend.getPort());
+		DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, port);
 		
 		socketUDP.send(request);
 		System.out.println("challenge sent");

@@ -1,39 +1,44 @@
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import javafx.event.ActionEvent;
 
+import java.io.IOException;
+
+
 public class Controller
 {
+	@FXML
+	public AnchorPane pane;
+	
+	
 	public void showRegisterClick(ActionEvent event) throws Exception
 	{
-		//load the Register.fxml
-		Parent register = FXMLLoader.load(getClass().getResource("Register.fxml"));
 		
-		//get the Stage from the event
-		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		FXMLLoader load = new FXMLLoader(getClass().getResource("Register2.fxml"));
+		AnchorPane newPane = load.load();
+		ControllerRegister c = load.getController();
+		c.setPane(pane);
 		
-		//Set the Stage
-		primaryStage.setScene(new Scene(register, 800, 600));
-		primaryStage.show();
+		pane.getChildren().setAll(newPane);
+		
 		
 		System.out.println("Register click");
 	}
 	
 	public void showLoginClick(ActionEvent event) throws Exception
 	{
-		//load the Register.fxml
-		Parent login = FXMLLoader.load(getClass().getResource("login.fxml"));
 		
-		//get the Stage from the event
-		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		
-		//Set the Stage
-		primaryStage.setScene(new Scene(login, 800, 600));
-		primaryStage.show();
+		FXMLLoader load = new FXMLLoader(getClass().getResource("login.fxml"));
+		AnchorPane newPane = load.load();
+		ControllerLogin c = load.getController();
+		c.setPane(pane);
+		pane.getChildren().setAll(newPane);
 		
 		System.out.println("Login click");
 	}

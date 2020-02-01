@@ -10,11 +10,12 @@ import java.nio.charset.StandardCharsets;
 public class UdpListener extends Thread
 {
 	private DatagramSocket socket;
+	//private port
 	
 	
 	public UdpListener(int port) throws SocketException
 	{
-		socket = new DatagramSocket();
+		socket = new DatagramSocket(port);
 	}
 	
 	@Override

@@ -1,0 +1,33 @@
+
+.button
+{
+          -fx-opacity: 1;
+          -fx-font: 24px "Calibri";
+          -fx-font-weight:bold;
+          -fx-background-color: #e50914;
+          -fx-text-fill:#ffffff;
+          -fx-padding: 8;
+          -fx-background-radius:5;
+          -fx-effect: dropshadow(one-pass-box, black, 14, 0.0 , 6, 0);
+
+}
+.button:hover
+{
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+}
+.textfield
+{
+ -fx-background-color: #333;
+ -fx-font: 12px "Calibri";
+ -fx-text-fill:#ffffff;
+}
+.form
+{
+    -fx-text-color:#ffffff;
+    //-fx-opacity: 0.7;
+    -fx-background-color: rgba(0, 0, 0, 0.85);;
+    -fx-padding: 10;
+    -fx-background-radius:5;
+    -fx-text-fill:#ffffff;
+}
