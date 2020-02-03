@@ -24,7 +24,7 @@ public class Controller
 		AnchorPane newPane = load.load();
 		ControllerRegister c = load.getController();
 		c.setPane(pane);
-		
+		pane.getChildren().clear();
 		pane.getChildren().setAll(newPane);
 		
 		
@@ -38,7 +38,9 @@ public class Controller
 		AnchorPane newPane = load.load();
 		ControllerLogin c = load.getController();
 		c.setPane(pane);
+		pane.getChildren().clear();
 		pane.getChildren().setAll(newPane);
+		
 		
 		System.out.println("Login click");
 	}

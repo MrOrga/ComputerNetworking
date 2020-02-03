@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,8 +11,32 @@ import java.nio.charset.StandardCharsets;
 public class UdpListener extends Thread
 {
 	private DatagramSocket socket;
-	//private port
+	private static Userhome userhome;
 	
+	public Userhome getUserhome()
+	{
+		return userhome;
+	}
+	
+	public static void setUserhome(Userhome userhome)
+	{
+		UdpListener.userhome = userhome;
+	}
+	
+	//private port
+	private void challengeShow(String friend)
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.challengeShow(friend);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
 	
 	public UdpListener(int port) throws SocketException
 	{
@@ -42,12 +67,17 @@ public class UdpListener extends Thread
 			
 			
 			String json = new String(request.getData(), 0, request.getLength(), StandardCharsets.UTF_8);
+			Gson gson = new Gson();
+			JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
 			
 			System.out.println(json);
-			
-			
-			Gson gson = new Gson();
-			JsonObj obj = gson.fromJson(json, JsonObj.class);
+			try
+			{
+				challengeShow(obj.getFriend());
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 			
 			
 			//send reply via TCP

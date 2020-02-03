@@ -28,6 +28,7 @@ public class ControllerLogin
 	//public static Thread sel;
 	private static SelectorT selector;
 	
+	
 	public static void setEvent(ActionEvent event)
 	{
 		selector.setEvent(event);
@@ -61,8 +62,11 @@ public class ControllerLogin
 	public void goToUserHome(ActionEvent event) throws Exception
 	{
 		//load the Register.fxml
-		Parent home = FXMLLoader.load(getClass().getResource("userhome.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("userhome.fxml"));
+		Parent home = loader.load();
+		Userhome userhome = loader.getController();
 		
+		UdpListener.setUserhome(userhome);
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		
@@ -76,7 +80,7 @@ public class ControllerLogin
 	public void goToHome(ActionEvent event) throws Exception
 	{
 		//load the Register.fxml
-		Parent home = FXMLLoader.load(getClass().getResource("sample.fxml"));
+		Parent home = FXMLLoader.load(getClass().getResource("home.fxml"));
 		
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();

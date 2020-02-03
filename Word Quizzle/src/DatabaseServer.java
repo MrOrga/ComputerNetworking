@@ -401,7 +401,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	private void run() throws RemoteException, IOException
 	{
 		
-		int port = 60500;
+		int port = 60550;
 		int portTcp = 60501;
 		try
 		{

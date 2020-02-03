@@ -74,19 +74,24 @@
      -fx-background-radius:5;
      -fx-text-fill:#ffffff;
 }
+.list-cell:empty
+{
+     visibility:hidden;
+}
 .list-cell
 {
     -fx-font: 16px "Calibri";
      //-fx-spacing:
-     -fx-background-color:  #181a1b;
-     -fx-padding: 5;
+     -fx-background-color:  rgba(0, 0, 0, 1);
+     -fx-padding: 8;
      -fx-background-radius:5;
      -fx-text-fill:#ffffff;
 }
 .list-cell:selected
 {
-     -fx-background-color: #3f4245;
+     -fx-background-color:#181a1b;
 }
+
 
 .list-cell:hover
 {

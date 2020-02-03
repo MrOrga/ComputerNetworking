@@ -28,6 +28,7 @@ public class SelectorT implements Runnable
 	private SocketChannel socket;
 	private ByteBuffer toSend;
 	private String username;
+	private static UdpListener udpListener;
 	
 	public void setObj(JsonObj obj)
 	{
@@ -162,8 +163,9 @@ public class SelectorT implements Runnable
 			//start UDP thread listener
 			InetSocketAddress myAddress = (InetSocketAddress) socket.getLocalAddress();
 			
-			UdpListener listener = new UdpListener(myAddress.getPort());
-			listener.start();
+			udpListener = new UdpListener(myAddress.getPort());
+			udpListener.start();
+			//udpListener.setUserhome(userhome);
 			
 		}
 		if (op.startsWith("202"))

@@ -44,7 +44,7 @@ public class ControllerRegister
 	public void backToHome(ActionEvent event) throws Exception
 	{
 		//load the Register.fxml
-		Parent home = FXMLLoader.load(getClass().getResource("sample.fxml"));
+		Parent home = FXMLLoader.load(getClass().getResource("home.fxml"));
 		
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -59,7 +59,7 @@ public class ControllerRegister
 	public void registerClick(ActionEvent event)
 	{
 		//Register of user in the database using RMI
-		int port = 60500;
+		int port = 60550;
 		Database serverObject;
 		Remote RemoteObject;
 		try
