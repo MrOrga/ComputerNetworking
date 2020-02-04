@@ -17,18 +17,18 @@ public class SelectorT implements Runnable
 	private int portTcp = 60501;
 	private ControllerLogin controllerLogin;
 	private Userhome userhome;
-	
-	public void setEvent(ActionEvent event)
-	{
-		this.event = event;
-	}
-	
 	private ActionEvent event;
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteBuffer toSend;
 	private String username;
 	private static UdpListener udpListener;
+	
+	
+	public void setEvent(ActionEvent event)
+	{
+		this.event = event;
+	}
 	
 	public void setObj(JsonObj obj)
 	{
@@ -222,6 +222,7 @@ public class SelectorT implements Runnable
 				socket.register(selector, SelectionKey.OP_WRITE);
 			while (true)
 			{
+				
 				selector.select();
 				for (SelectionKey key : selector.selectedKeys())
 				{

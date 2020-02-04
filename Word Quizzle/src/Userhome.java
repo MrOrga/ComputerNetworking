@@ -29,6 +29,7 @@ public class Userhome
 		
 		challengeController c = loader.getController();
 		c.setUser(friend);
+		c.setChallenge(challenge);
 		challenge.getChildren().setAll(newPane);
 		
 		

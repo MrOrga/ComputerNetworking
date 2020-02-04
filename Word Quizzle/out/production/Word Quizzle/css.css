@@ -79,7 +79,6 @@
 {
     -fx-font: 18px "Calibri";
     -fx-alignment:center;
-
      -fx-background-color: #181a1b ;
      -fx-padding: 10;
      -fx-background-radius:5;
@@ -88,7 +87,7 @@
 .list-cell:empty
 {
      -fx-background-color:  #3f4245;
-   
+
 }
 .list-cell:empty:hover
 {
