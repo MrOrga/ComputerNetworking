@@ -90,7 +90,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		{
 			if (user.isLogged())
 			{
-				obj = new JsonObj("401 UserAlreadyExist");
+				obj = new JsonObj("401 UserAlreadyLogged");
 				sendResponse(obj, client);
 				//throw new UserAlreadyLogged("Utente già loggato");
 			} else

@@ -60,16 +60,14 @@ public class Userhome
 		
 		friendlist.getItems().clear();
 		friendlist.getItems().addAll(friend);
-		System.out.println(friendlist.getItems().size());
+		friendlist.getStylesheets().add("css.css");
+		/*System.out.println(friendlist.getItems().size());
 		for (int i = 0; i < friendlist.getItems().size(); i++)
 			if (friendlist.getItems().get(i) == null)
 			{
 				System.out.println("empty cell");
 				friendlist.getItems().remove(friendlist.getItems().get(i));
-			}
-		{
-		
-		}
+			}*/
 		friendlist.setVisible(true);
 		System.out.println("friendlist show");
 	}
