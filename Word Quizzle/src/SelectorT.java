@@ -96,6 +96,36 @@ public class SelectorT implements Runnable
 		});
 	}
 	
+	private void goToChallenge(String word)
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerLogin.goToChallenge(event, word);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	private void newWord(String word)
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerLogin.setWord(word);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	//show friend list
 	private void showFriendList(Vector<String> friendlist)
 	{
@@ -143,13 +173,7 @@ public class SelectorT implements Runnable
 		Gson gson = new Gson();
 		JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
 		//some problem with gson function
-		while (obj == null)
-		{
-			//JsonObj obj = gson.fromJson(json.trim(), JsonObj.class);
-			
-			/*socket.register(selector, SelectionKey.OP_READ);
-			return;*/
-		}
+		
 		String op = obj.getOp();
 		
 		//operation login successful
@@ -164,7 +188,10 @@ public class SelectorT implements Runnable
 			InetSocketAddress myAddress = (InetSocketAddress) socket.getLocalAddress();
 			
 			udpListener = new UdpListener(myAddress.getPort());
+			udpListener.setDaemon(true);
 			udpListener.start();
+			
+			
 			//udpListener.setUserhome(userhome);
 			
 		}
@@ -185,6 +212,16 @@ public class SelectorT implements Runnable
 			this.setUsername("");
 			goToHome();
 			
+		}
+		if (op.startsWith("210"))
+		{
+			
+			goToChallenge(obj.getWord());
+		}
+		if (op.startsWith("211"))
+		{
+			
+			newWord(obj.getWord());
 		}
 		//operation error
 		else
@@ -268,45 +305,58 @@ public class SelectorT implements Runnable
 						int len = 0;
 						if (key.attachment() != null)
 						{
+							System.out.println("Attachment not null");
 							attachment = (Attachment) key.attachment();
 							len = attachment.getLen();
 						}
 						int read = client.read(buf);
 						buf.flip();
 						//some error
+						System.out.println(read);
 						if (read == -1)
+						{
+							System.out.println("help");
 							return;
+						}
 						
 						
 						if (attachment == null)
 						{
+							
 							len = buf.getInt();
 						}
-						if (read < len && len < 512)
-							read += client.read(buf);
+						/*if (read < len && len < 512)
+							read += client.read(buf);*/
 						
 						//System.out.println(len);
 						if (key.attachment() == null)
 						{
-							res = new String(buf.array(), 4, buf.remaining(), StandardCharsets.UTF_8);
-							attachment = new Attachment(res, len, len - (read));
-							if (len <= buf.remaining())
+							res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
+							attachment = new Attachment(res, len, len - (read - 4));
+							if (attachment.getLeft() <= 0)
+							{
+								key.attach(null);
 								hadleResponse(res);
-							else
+							} else
+							{
+								System.out.println("attachment read");
 								socket.register(selector, SelectionKey.OP_READ, attachment);
+							}
 							
 						} else
 						{
 							if (key.attachment() != null)
 							{
-								res = attachment.getRes() + new String(buf.array(), StandardCharsets.UTF_8);
+								res = attachment.getRes() + new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
 								
 								attachment = new Attachment(res, len, attachment.getLeft() - read);
 								if (attachment.getLeft() > 0)
-									
-									socket.register(selector, SelectionKey.OP_READ, attachment);
-								else
 								{
+									System.out.println("attachment read");
+									socket.register(selector, SelectionKey.OP_READ, attachment);
+								} else
+								{
+									key.attach(null);
 									hadleResponse(res);
 								}
 								
@@ -346,10 +396,10 @@ public class SelectorT implements Runnable
 						//System.out.println(toSend.getInt(0));
 						//System.out.println(new String(toSend.array()));
 						if (toSend.hasRemaining())
-							socket.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+							socket.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, null);
 						else
 						{
-							socket.register(selector, SelectionKey.OP_READ);
+							socket.register(selector, SelectionKey.OP_READ, null);
 							//socket.shutdownOutput();
 							
 						}

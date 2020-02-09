@@ -7,6 +7,28 @@ public class JsonObj
 	private String friend;
 	private String passwd;
 	private Vector<String> friendlist;
+	private String word;
+	private Integer challengePoints;
+	
+	public int getChallengePoints()
+	{
+		return challengePoints;
+	}
+	
+	public void setChallengePoints(int challengePoints)
+	{
+		this.challengePoints = challengePoints;
+	}
+	
+	public String getWord()
+	{
+		return word;
+	}
+	
+	public void setWord(String word)
+	{
+		this.word = word;
+	}
 	
 	public JsonObj(String username, Vector<String> friendlist)
 	{

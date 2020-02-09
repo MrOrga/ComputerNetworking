@@ -1,10 +1,11 @@
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 
 public class GsonHandler
@@ -17,7 +18,7 @@ public class GsonHandler
 	}
 	
 	//saving db into json file
-	public void tofile(DatabaseServer db, String path) throws IOException
+	public synchronized void tofile(DatabaseServer db, String path) throws IOException
 	{
 		//gson.toJson(db, new FileWriter("C:\\db.json"));...
 		String json = gson.toJson(db);
@@ -46,6 +47,60 @@ public class GsonHandler
 		System.out.println(json);
 		
 		return gson.fromJson(json.trim(), JsonObj.class);
+	}
+	
+	public String readWordTranslate(String json) throws IOException
+	{
+		String word = "";
+		JsonReader jsonReader = new JsonReader(new StringReader(json));
+		
+		try
+		{
+			while (jsonReader.hasNext())
+			{
+				JsonToken nextToken = jsonReader.peek();
+				//System.out.println(nextToken);
+				
+				if (JsonToken.BEGIN_OBJECT.equals(nextToken))
+				{
+					
+					jsonReader.beginObject();
+					
+				} else if (JsonToken.NAME.equals(nextToken))
+				{
+					
+					String name = jsonReader.nextName();
+					//System.out.println(name);
+					
+				} else if (JsonToken.STRING.equals(nextToken))
+				{
+					
+					String value = jsonReader.nextString();
+					//System.out.println(value);
+					return value;
+					
+				} else if (JsonToken.NUMBER.equals(nextToken))
+				{
+					
+					long value = jsonReader.nextLong();
+					//System.out.println(value);
+					
+				}
+			}
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return word;
+	}
+	
+	public List<String> fromDiz(String path) throws IOException
+	{
+		FileReader fileReader = new FileReader(path);
+		List<String> word = gson.fromJson(fileReader, List.class);
+		fileReader.close();
+		return word;
 	}
 }
 

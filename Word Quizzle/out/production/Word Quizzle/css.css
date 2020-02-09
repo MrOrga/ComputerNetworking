@@ -32,8 +32,9 @@
 }
 .textfield
 {
+-fx-alignment:center;
  -fx-background-color: #333;
- -fx-font: 12px "Calibri";
+ -fx-font: 16px "Calibri";
  -fx-text-fill:#ffffff;
 }
 .form
@@ -63,11 +64,12 @@
 
 .center
 {
-    -fx-background-color:  #181a1b;
+    -fx-background-color: #3f4245;
     -fx-padding: 10;
     -fx-background-radius:5;
     -fx-text-fill:#ffffff;
 }
+
 .bottom{
      -fx-background-color: #333;
      -fx-padding: 10;

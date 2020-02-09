@@ -1,14 +1,10 @@
-import javafx.css.Selector;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.Text;
 
-import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Vector;
 
@@ -24,7 +20,7 @@ public class Userhome
 	
 	public void challengeShow(String friend) throws Exception
 	{
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("challenge.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("notification.fxml"));
 		AnchorPane newPane = loader.load();
 		
 		challengeController c = loader.getController();
@@ -35,7 +31,7 @@ public class Userhome
 		
 	}
 	
-	public void addFriendClick() throws ClosedChannelException
+	public void addFriendClick(ActionEvent event) throws ClosedChannelException
 	{
 		String friend = username.getText();
 		JsonObj obj = new JsonObj("addfriend", friend);
@@ -47,6 +43,7 @@ public class Userhome
 	
 	public void challengeClick(ActionEvent event) throws ClosedChannelException
 	{
+		ControllerLogin.setEvent(event);
 		String friend = friendlist.getSelectionModel().getSelectedItem();
 		JsonObj obj = new JsonObj("challenge", friend);
 		ControllerLogin.sendRequest(obj);
@@ -83,8 +80,9 @@ public class Userhome
 	public void logoutClick(ActionEvent event) throws ClosedChannelException
 	{
 		JsonObj obj = new JsonObj("logout");
-		ControllerLogin.sendRequest(obj);
 		ControllerLogin.setEvent(event);
+		ControllerLogin.sendRequest(obj);
+		
 	}
 	
 	

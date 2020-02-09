@@ -22,6 +22,9 @@
                             <VBox.margin>
                                 <Insets left="30.0" />
                             </VBox.margin>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                         </Button>
                         <HBox prefHeight="100.0" prefWidth="200.0">
                             <children>

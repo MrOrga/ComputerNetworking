@@ -27,7 +27,7 @@ public class ControllerLogin
 	public AnchorPane pane;
 	//public static Thread sel;
 	private static SelectorT selector;
-	
+	private challengeController c;
 	
 	public static void setEvent(ActionEvent event)
 	{
@@ -57,6 +57,28 @@ public class ControllerLogin
 	public static void setUserHome(Userhome userhome) throws ClosedChannelException
 	{
 		selector.setUserhome(userhome);
+	}
+	
+	public void goToChallenge(ActionEvent event, String word) throws Exception
+	{
+		//load the Register.fxml
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("challenge.fxml"));
+		Parent home = loader.load();
+		c = loader.getController();
+		c.setWord(word);
+		//get the Stage from the event
+		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		
+		//Set the Scene
+		primaryStage.setScene(new Scene(home, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Go to Challenge");
+	}
+	
+	public void setWord(String word)
+	{
+		c.setWord(word);
 	}
 	
 	public void goToUserHome(ActionEvent event) throws Exception
@@ -106,6 +128,7 @@ public class ControllerLogin
 			JsonObj obj = new JsonObj("login", usrname, password);
 			selector = new SelectorT(obj, this, event);
 			Thread sel = new Thread(selector);
+			sel.setDaemon(true);
 			sel.start();
 			System.out.println("Login user in progress...");
 			System.out.println("Username: " + usrname + " Password: " + password);
