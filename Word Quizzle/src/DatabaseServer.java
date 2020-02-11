@@ -21,28 +21,26 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	//concurrent hash map to save user info
 	private ConcurrentHashMap<String, User> database;
 	
-	//socket map to save user info
+	//socket map to save connected user information
 	private transient ConcurrentHashMap<String, UserHandler> socketmap;
+	//need for retrieve the username from the socket
 	private transient ConcurrentHashMap<SocketChannel, String> usersocketmap;
-	//private transient ConcurrentHashMap<SocketChannel, UserHandler> socketmap;
+	
 	
 	private static ServerSocketChannel socket;
 	private static Selector selector;
 	private transient SelectionKey currentKey;
 	private transient JsonObj obj;
 	private transient String currentUser;
-	//private ByteBuffer toSend;
 	
 	public DatabaseServer()
 	{
 		database = new ConcurrentHashMap<String, User>();
-		//socketmap = new ConcurrentHashMap<SocketChannel, UserHandler>();
 		socketmap = new ConcurrentHashMap<String, UserHandler>();
 		usersocketmap = new ConcurrentHashMap<SocketChannel, String>();
 	}
 	
 	
-	@Override
 	public int register(String user, String password) throws IOException
 	{
 		if (password == null || user == null)
@@ -113,6 +111,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	
 	public void logout(String username, SocketChannel client) throws IOException
 	{
+		currentUser = usersocketmap.get(client);
 		User user = database.get(username);
 		user.logout();
 		sendResponse(new JsonObj("204 OK LOGOUT"), client, currentUser);
@@ -146,6 +145,38 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 				handler.tofile(this, "db.json");
 			}
 		}
+	}
+	
+	private void friendlist(String username, SocketChannel client) throws IOException
+	{
+		Gson gson = new Gson();
+		Vector<String> friend = database.get(username).getFriend();
+		JsonObj obj1 = new JsonObj("203 showfriendlist");
+		obj1.setFriendlist(friend);
+		sendResponse(obj1, client, currentUser);
+		
+	}
+	
+	private void friendlistRank(String username, SocketChannel client) throws IOException
+	{
+		Vector<String> friends = database.get(username).getFriend();
+		Vector<String> users = new Vector<String>(friends);
+		users.add(0, username);
+		Vector<Integer> scores = new Vector<Integer>();
+		scores.add(0, database.get(username).getPoint());
+		for (int i = 1; i < users.size(); i++)
+		{
+			scores.add(database.get(users.get(i)).getPoint());
+		}
+		Sort sort = new Sort(scores, users);
+		sort.sort();
+		users = sort.getUsers();
+		scores = sort.getScores();
+		JsonObj obj1 = new JsonObj("205 showfriendlistScore");
+		obj1.setFriendlist(users);
+		obj1.setScores(scores);
+		sendResponse(obj1, client, currentUser);
+		
 	}
 	
 	public void sendResponse(JsonObj obj, SocketChannel client, String user) throws IOException
@@ -194,30 +225,35 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 				case "friendlist":
 					this.friendlist(currentUser, client);
 					break;
+				case "leaderboard":
+					this.friendlistRank(currentUser, client);
+					break;
 				case "challenge":
 					this.challenge(friend, client);
 					break;
 				case "accept":
 					this.acceptChallenge(currentUser, friend, client);
+					break;
+				case "score":
+					this.score(currentUser, client);
+					break;
+				
 				
 			}
 		} catch (Exception ex)
 		{
-			ex.printStackTrace();
+			//ex.printStackTrace();
 		}
 		
 	}
 	
-	
-	private void friendlist(String username, SocketChannel client) throws IOException
+	private void score(String currentUser, SocketChannel client) throws IOException
 	{
-		Gson gson = new Gson();
-		Vector<String> friend = database.get(username).getFriend();
-		JsonObj obj1 = new JsonObj("203 showfriendlist");
-		obj1.setFriendlist(friend);
+		JsonObj obj1 = new JsonObj("206 score");
+		obj1.setPoints(database.get(currentUser).getPoint());
 		sendResponse(obj1, client, currentUser);
-		
 	}
+	
 	
 	private void write(SelectionKey key) throws IOException
 	{
@@ -259,6 +295,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 	private void read(SelectionKey key) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
+		
 		ByteBuffer buf = ByteBuffer.allocate(512);
 		buf.clear();
 		Attachment attachment = null;
@@ -275,13 +312,23 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		if (read == -1)
 		{
 			client.close();
+			key.cancel();
 			return;
 		}
 		
 		
 		if (attachment == null)
 		{
-			len = buf.getInt();
+			try
+			{
+				len = buf.getInt();
+			} catch (Exception e)
+			{
+				key.cancel();
+				return;
+				/*key.cancel();
+				client.close();*/
+			}
 		}
 		
 		//System.out.println(len);
@@ -351,6 +398,11 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		
 	}
 	
+	public String getUsername(SocketChannel user)
+	{
+		return usersocketmap.get(user);
+	}
+	
 	public UserHandler getUserHandler(String user)
 	{
 		return socketmap.get(user);
@@ -414,7 +466,12 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 		else
 			s = new DatabaseServer();
 		
-		s.run();
+		try
+		{
+			s.run();
+		} catch (Exception ex)
+		{
+		}
 	}
 	
 	public ConcurrentHashMap<String, User> getDatabase()
@@ -487,7 +544,7 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 					}
 				}
 				selector.selectedKeys().clear();
-			} catch (SocketException ex)
+			} catch (IOException ex)
 			{
 				currentUser = usersocketmap.get((SocketChannel) currentKey.channel());
 				currentKey.cancel();
@@ -495,11 +552,11 @@ public class DatabaseServer extends RemoteServer implements Database, Serializab
 				database.get(currentUser).logout();
 				
 				
-			} catch (IOException e)
+			} /*catch (IOException e)
 			{
 				
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
 	

@@ -75,12 +75,12 @@
                     <children>
                         <AnchorPane layoutX="191.0" layoutY="184.0" />
                         <AnchorPane layoutX="190.0" layoutY="16.0" />
-                  <Text fx:id="text" fill="#e50914" layoutX="60.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="YOUR SCORE IS: ">
+                  <Text fx:id="text" fill="#e50914" layoutX="90.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="YOUR SCORE IS: " textAlignment="CENTER">
                      <font>
                         <Font name="Calibri Bold" size="54.0" />
                      </font>
                   </Text>
-                  <Text fx:id="score" fill="#e50914" layoutX="462.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="154.5458984375">
+                  <Text fx:id="score" fill="#e50914" layoutX="443.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="154.5458984375">
                      <font>
                         <Font name="Calibri" size="54.0" />
                      </font>

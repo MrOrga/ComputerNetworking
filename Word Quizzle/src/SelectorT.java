@@ -1,8 +1,13 @@
 import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 import javax.swing.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -21,9 +26,15 @@ public class SelectorT implements Runnable
 	private Selector selector;
 	private SocketChannel socket;
 	private ByteBuffer toSend;
-	private String username;
+	public static String username;
 	private static UdpListener udpListener;
 	private Controller controllerHome;
+	private static volatile boolean run = true;
+	
+	public static void setRun(boolean run)
+	{
+		SelectorT.run = run;
+	}
 	
 	public void setEvent(ActionEvent event)
 	{
@@ -42,6 +53,7 @@ public class SelectorT implements Runnable
 	
 	public SelectorT(JsonObj obj, ControllerLogin controllerLogin, ActionEvent event, Controller controllerHome)
 	{
+		run = true;
 		this.controllerLogin = controllerLogin;
 		this.obj = obj;
 		this.event = event;
@@ -112,6 +124,27 @@ public class SelectorT implements Runnable
 		});
 	}
 	
+	private void errorPopUp(ActionEvent event, String error)
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				Stage popup = new Stage();
+				FXMLLoader load = new FXMLLoader(getClass().getResource("error.fxml"));
+				Parent home = load.load();
+				ErrorController c = load.getController();
+				c.setError(error);
+				popup.setScene(new Scene(home, 310, 220));
+				popup.show();
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	private void goToChallenge(String word)
 	{
 		
@@ -157,13 +190,43 @@ public class SelectorT implements Runnable
 		});
 	}
 	
+	//show user points
+	private void showScore(int points)
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.showPoints(points);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	//show leaderboard
+	private void showLeaderboard(Vector<String> friendlist, Vector<Integer> scores)
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.showLeaderboard(friendlist, scores);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	private void showFriendListAfter()
 	{
 		Platform.runLater(() ->
 		{
 			try
 			{
-				userhome.showFriendListClick();
+				userhome.showFriendListClick(event);
 			} catch (Exception e)
 			{
 				e.printStackTrace();
@@ -225,38 +288,62 @@ public class SelectorT implements Runnable
 			//udpListener.setUserhome(userhome);
 			
 		}
+		//add friend
 		if (op.startsWith("202"))
 		{
 			//this.setUsername(obj.getUsername());
 			System.out.println("Friend added");
 			showFriendListAfter();
 		}
+		//friendlist
 		if (op.startsWith("203"))
 		{
 			
 			showFriendList(obj.getFriendlist());
 		}
+		//logout
 		if (op.startsWith("204"))
 		{
 			socket.close();
 			this.setUsername("");
 			goToHome();
-			
+			UdpListener.setRun(false);
+			run = false;
 		}
+		//Leaderboard
+		if (op.startsWith("205"))
+		{
+			
+			showLeaderboard(obj.getFriendlist(), obj.getScores());
+		}
+		//show points
+		if (op.startsWith("206"))
+		{
+			
+			showScore(obj.getPoints());
+		}
+		//challenge
 		if (op.startsWith("210"))
 		{
 			
 			goToChallenge(obj.getWord());
 		}
+		//nextword challenge
 		if (op.startsWith("211"))
 		{
 			
 			newWord(obj.getWord());
 		}
+		
+		if (op.startsWith("212"))
+		{
+			
+			goToScore(event, 0, "Waiting opponent");
+		}
 		//challenge is over
 		if (op.startsWith("213"))
 		{
-			goToScore(event, obj.getChallengePoints(), null);
+			goToScore(event, obj.getPoints(), null);
 		}
 		
 		
@@ -272,21 +359,22 @@ public class SelectorT implements Runnable
 			showError("User already logged");
 			
 		}
+		//already friend
+		if (op.startsWith("411"))
+		{
+			
+			errorPopUp(event, op.substring(4));
+		}
 		//friend is busy
 		if (op.startsWith("450"))
 		{
-			//todo visual feedback
+			errorPopUp(event, op.substring(4));
 			UdpListener.resetAccept();
-		}
-		//friend already in a challenge
-		if (op.startsWith("450"))
-		{
-		
 		}
 		//error on translation server
 		if (op.startsWith("451"))
 		{
-			goToScore(event, 0, "translation server error");
+			goToScore(event, 0, "translation error");
 		}
 		
 	}
@@ -316,7 +404,7 @@ public class SelectorT implements Runnable
 				socket.register(selector, SelectionKey.OP_CONNECT);
 			else
 				socket.register(selector, SelectionKey.OP_WRITE);
-			while (true)
+			while (run)
 			{
 				
 				selector.select();
@@ -405,34 +493,24 @@ public class SelectorT implements Runnable
 					{
 						
 						System.out.println("SEND REQUEST TO SERVER");
-						if (toSend.position() == 0)
-						{
-							
-							int len = toSend.array().length;
-							System.out.println(len);
-							//len of int value
-							String slen = String.valueOf(len) + " ";
-							int intlen = slen.length();
-							//int totlen = len + intlen;
-							ByteBuffer bufflen = ByteBuffer.allocate(4);
-							bufflen.clear();
-							
-							bufflen.putInt(len);
-							bufflen.flip();
-							
-							int byteWrite = socket.write(bufflen);
-							//System.out.println(byteWrite);
-							
-						}
-						socket.write(toSend);
 						
-						if (toSend.hasRemaining())
-							socket.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, null);
-						else
-						{
-							socket.register(selector, SelectionKey.OP_READ, null);
-							
-						}
+						int len = toSend.array().length;
+						System.out.println(len);
+						
+						ByteBuffer bufflen = ByteBuffer.allocate(4);
+						bufflen.clear();
+						bufflen.putInt(len);
+						bufflen.flip();
+						
+						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+						outputStream.write(bufflen.array());
+						outputStream.write(toSend.array());
+						ByteBuffer newBuff = ByteBuffer.wrap(outputStream.toByteArray());
+						socket.write(newBuff);
+						
+						socket.register(selector, SelectionKey.OP_READ, null);
+						
+						
 					}
 				}
 				selector.selectedKeys().clear();

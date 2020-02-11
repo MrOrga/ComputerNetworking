@@ -17,6 +17,14 @@ public class UdpListener extends Thread
 	private DatagramSocket socket;
 	private static Userhome userhome;
 	private volatile static AtomicBoolean canAccept = new AtomicBoolean(true);
+	private static volatile boolean run = true;
+	
+	public static void setRun(boolean run)
+	{
+		
+		UdpListener.run = run;
+	}
+	
 	
 	public Userhome getUserhome()
 	{
@@ -55,6 +63,7 @@ public class UdpListener extends Thread
 	
 	public UdpListener(int port) throws SocketException
 	{
+		run = true;
 		socket = new DatagramSocket(port);
 	}
 	
@@ -63,7 +72,7 @@ public class UdpListener extends Thread
 	{
 		System.out.println("UDP thread started");
 		
-		while (true)
+		while (run)
 		{
 			DatagramPacket request = new DatagramPacket(new byte[1024], 1024);
 			//waiting for request from client
@@ -112,8 +121,12 @@ public class UdpListener extends Thread
 		{
 			try
 			{
-				userhome.notificationReset();
-				canAccept.set(true);
+				if (!canAccept.get())
+				{
+					userhome.notificationReset();
+					canAccept.set(true);
+				}
+				
 			} catch (Exception e)
 			{
 				e.printStackTrace();

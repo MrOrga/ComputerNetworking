@@ -13,7 +13,6 @@ public class Translate extends Thread
 	private ArrayList<String> challengeWordEn;
 	private ArrayList<String> challengeWordIt;
 	private Challenge challenge;
-	//private Thread tChallenge;
 	
 	Translate(Challenge challenge)
 	{
@@ -29,8 +28,8 @@ public class Translate extends Thread
 		
 		try
 		{
-			String url = "https://aapi.mymemory.translated.net/get?q=";
-			URLConnection urlConnection;
+			String url = "https://api.mymemory.translated.net/get?q=";
+			
 			for (int i = 0; i < challengeWordIt.size(); i++)
 			{
 				URL urlRequest = new URL(url + challengeWordIt.get(i) + "&langpair=it|en");
@@ -44,7 +43,6 @@ public class Translate extends Thread
 				}
 				if (!json.equals(""))
 				{
-					//System.out.println(json);
 					GsonHandler gsonHandler = new GsonHandler();
 					String word = gsonHandler.readWordTranslate(json);
 					challengeWordEn.add(word);

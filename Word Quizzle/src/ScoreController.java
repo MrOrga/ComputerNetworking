@@ -50,7 +50,7 @@ public class ScoreController
 		Userhome userhome = loader.getController();
 		UdpListener.setUserhome(userhome);
 		UdpListener.setCanAccept(new AtomicBoolean(true));
-		
+		userhome.setUser();
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		

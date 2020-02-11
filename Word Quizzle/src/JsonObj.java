@@ -7,17 +7,18 @@ public class JsonObj
 	private String friend;
 	private String passwd;
 	private Vector<String> friendlist;
+	private Vector<Integer> scores;
 	private String word;
-	private Integer challengePoints;
+	private Integer points;
 	
-	public int getChallengePoints()
+	public int getPoints()
 	{
-		return challengePoints;
+		return points;
 	}
 	
-	public void setChallengePoints(int challengePoints)
+	public void setPoints(int challengePoints)
 	{
-		this.challengePoints = challengePoints;
+		this.points = challengePoints;
 	}
 	
 	public String getWord()
@@ -112,7 +113,18 @@ public class JsonObj
 		this.op = op;
 		this.friend = friend;
 	}
-/*@Override
+	
+	public Vector<Integer> getScores()
+	{
+		return scores;
+	}
+	
+	public void setScores(Vector<Integer> scores)
+	{
+		this.scores = scores;
+	}
+	
+	/*@Override
 	public String toString()
 	{
 		return "JsonObj{" +

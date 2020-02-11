@@ -73,6 +73,7 @@ public class challengeController
 	
 	public void declineChallangeClick(ActionEvent event)
 	{
+		UdpListener.resetAccept();
 		challenge.getChildren().clear();
 	}
 	

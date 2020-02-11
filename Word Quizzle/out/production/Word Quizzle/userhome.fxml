@@ -10,8 +10,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="background" stylesheets="@css.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Userhome">
     <top>
@@ -56,7 +57,7 @@
                     <children>
                         <HBox spacing="20.0">
                             <children>
-                                <TextField fx:id="username" focusTraversable="false" minHeight="-Infinity" prefHeight="47.0" prefWidth="130.0" promptText="Friend Username" styleClass="bottom">
+                                <TextField fx:id="username" focusTraversable="false" minHeight="-Infinity" prefHeight="47.0" prefWidth="125.0" promptText="Friend Username" styleClass="bottom">
                                     <HBox.margin>
                                         <Insets left="10.0" />
                                     </HBox.margin>
@@ -65,8 +66,21 @@
                            <cursor>
                               <Cursor fx:constant="HAND" />
                            </cursor></Button>
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Button layoutX="159.0" layoutY="10.0" mnemonicParsing="false" onAction="#logoutClick" prefHeight="40.0" prefWidth="95.0" text="Logout">
+                        <AnchorPane fx:id="showPoints1" styleClass="error" stylesheets="@css.css" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Text fill="#e50914" layoutX="32.0" layoutY="30.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Your user is:" wrappingWidth="117.13671875">
+                                 <font>
+                                    <Font name="Calibri" size="18.0" />
+                                 </font>
+                              </Text>
+                              <Text fx:id="user" fill="#e50914" layoutX="162.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" wrappingWidth="76.13671875">
+                                 <font>
+                                    <Font name="Calibri Bold" size="18.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                        </AnchorPane>
+                                <Button layoutX="159.0" layoutY="10.0" mnemonicParsing="false" onAction="#logoutClick" prefHeight="40.0" prefWidth="125.0" text="Logout">
                                     <HBox.margin>
                                         <Insets right="10.0" />
                                     </HBox.margin>
@@ -79,14 +93,48 @@
                                 <Insets />
                             </VBox.margin>
                         </HBox>
-                        <Button mnemonicParsing="false" onAction="#showFriendListClick" prefHeight="40.0" prefWidth="125.0" text="Friend list">
-                            <VBox.margin>
-                                <Insets left="10.0" />
-                            </VBox.margin>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
+                  <HBox prefHeight="47.0" prefWidth="755.0" spacing="20.0">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                     <children>
+                              <Button minWidth="125.0" mnemonicParsing="false" onAction="#showFriendListClick" prefHeight="40.0" prefWidth="125.0" text="Friend list">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                              </Button>
+                        <Button minWidth="125.0" mnemonicParsing="false" onAction="#showLeaderboardClick" prefHeight="40.0" prefWidth="125.0" text="Points">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
                         </Button>
+                        <AnchorPane fx:id="showPoints" minWidth="285.0" prefHeight="47.0" prefWidth="300.0" styleClass="error" stylesheets="@css.css" visible="false" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Text fill="#e50914" layoutX="34.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Your score is : " wrappingWidth="154.13671875">
+                                 <font>
+                                    <Font name="Calibri" size="18.0" />
+                                 </font>
+                              </Text>
+                              <Text fx:id="score" fill="#e50914" layoutX="161.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="89.13671875">
+                                 <font>
+                                    <Font name="Calibri Bold" size="18.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </AnchorPane>
+                        <Button layoutX="160.0" layoutY="10.0" minWidth="125.0" mnemonicParsing="false" onAction="#showScoreClick" prefHeight="40.0" prefWidth="125.0" text="Score">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
                     </children>
                 </VBox>
             </children>

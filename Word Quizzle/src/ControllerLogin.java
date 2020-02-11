@@ -107,7 +107,7 @@ public class ControllerLogin
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("userhome.fxml"));
 		Parent home = loader.load();
 		Userhome userhome = loader.getController();
-		
+		userhome.setUser();
 		UdpListener.setUserhome(userhome);
 		//get the Stage from the event
 		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -119,20 +119,21 @@ public class ControllerLogin
 		System.out.println("Go to User Home");
 	}
 	
-	public void goToScore(ActionEvent event, int score, String error) throws Exception
+	public void goToScore(ActionEvent event, int score, String eventChallenge) throws Exception
 	{
 		//load the score.fxml
 		
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("score.fxml"));
 		Parent home = loader.load();
 		ScoreController c = loader.getController();
-		if (error != null)
+		if (eventChallenge != null)
 		{
-			c.setText("Error on translation");
+			c.setText(eventChallenge);
 			
 			c.setScore("");
 		} else
 		{
+			
 			c.setScore(String.valueOf(score));
 		}
 		//get the Stage from the event

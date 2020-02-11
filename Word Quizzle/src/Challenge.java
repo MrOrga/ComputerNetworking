@@ -28,6 +28,7 @@ public class Challenge extends Thread
 		this.error = error;
 	}
 	
+	private JsonObj obj;
 	private volatile int lastWrite = 0;
 	private Selector challengeSelector;
 	private SocketChannel player1;
@@ -122,7 +123,7 @@ public class Challenge extends Thread
 			sendResponse(obj, client, userPlayer1);
 			sendResponse(obj, client2, userPlayer2);
 			
-			challengeTimer.schedule(this::restoreMainSelectorKey, 10, TimeUnit.SECONDS);
+			challengeTimer.schedule(this::restoreMainSelectorKey, 120, TimeUnit.SECONDS);
 			
 			while (lastWrite != 2)
 			{
@@ -175,7 +176,7 @@ public class Challenge extends Thread
 	
 	private void sendResponse(JsonObj obj, SocketChannel client, String user) throws IOException
 	{
-		//this.obj = obj;
+		this.obj = obj;
 		Gson gson = new Gson();
 		String json = gson.toJson(obj);
 		System.out.println(json);
@@ -233,7 +234,7 @@ public class Challenge extends Thread
 					
 					
 					JsonObj obj1 = new JsonObj("213 challenge is over");
-					obj1.setChallengePoints(pointPlayer1);
+					obj1.setPoints(pointPlayer1);
 					if (player1.isConnected())
 					{
 						player1.register(challengeSelector, SelectionKey.OP_WRITE);
@@ -242,7 +243,7 @@ public class Challenge extends Thread
 						server.getSocketmap().get(userPlayer1).setBusy(false);
 					}
 					
-					obj1.setChallengePoints(pointPlayer2);
+					obj1.setPoints(pointPlayer2);
 					if (player2.isConnected())
 					{
 						player2.register(challengeSelector, SelectionKey.OP_WRITE);
@@ -276,8 +277,10 @@ public class Challenge extends Thread
 					System.out.println("Error server traslation");
 				}
 				challengeSelector.wakeup();
-				player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
-				player2.keyFor(selector).interestOps(SelectionKey.OP_READ);
+				if (player1.isConnected())
+					player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
+				if (player2.isConnected())
+					player2.keyFor(selector).interestOps(SelectionKey.OP_READ);
 				selector.wakeup();
 				
 				
@@ -332,21 +335,34 @@ public class Challenge extends Thread
 			{
 				
 				case "logout":
-					server.logout(currentUser, client);
-					//closing connection for the player that logout and set interestOps to the other to OP_READ
-					if (player1.keyFor(selector) != null && client == player1.keyFor(selector).channel())
-					{
-						player1.keyFor(selector).interestOps(SelectionKey.OP_WRITE);
-						//player2.keyFor(selector).interestOps(SelectionKey.OP_READ);
-						selector.wakeup();
-					} else if (player2.keyFor(selector) != null && client == player2.keyFor(selector).channel())
-					{
-						player2.keyFor(selector).interestOps(SelectionKey.OP_WRITE);
-						//player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
-						selector.wakeup();
-					}
+					client.keyFor(challengeSelector).interestOps(0);
 					
-					//isFinishied = true;
+					server.logout(server.getUsername(client), client);
+					//client.register(challengeSelector, SelectionKey.OP_WRITE);
+					//sendResponse(obj1, player1, userPlayer1);
+					
+					server.getSocketmap().get(userPlayer1).setBusy(false);
+					selector.wakeup();
+					
+					/*User user = server.getUser(currentUser);
+					user.logout();
+					
+					if (player1.keyFor(challengeSelector) != null && client == player1.keyFor(challengeSelector).channel())
+					{
+						player1.register(challengeSelector, SelectionKey.OP_WRITE);
+						//player1.keyFor(challengeSelector).interestOps(SelectionKey.OP_WRITE);
+						
+						
+					} else if (player2.keyFor(challengeSelector) != null && client == player2.keyFor(challengeSelector).channel())
+					{
+						player2.register(challengeSelector, SelectionKey.OP_WRITE);
+						//player2.keyFor(challengeSelector).interestOps(SelectionKey.OP_WRITE);
+						
+						
+					}
+					sendResponse(new JsonObj("204 OK LOGOUT"), client, currentUser);
+					challengeSelector.wakeup();*/
+					
 					break;
 				case "word translation":
 					if (client == player1)
@@ -443,16 +459,27 @@ public class Challenge extends Thread
 		
 		
 		client.write(newBuff);
-		if (isFinishied)
+		if (obj.getOp().startsWith("204"))
 		{
 			
-			lastWrite++;
-			if (lastWrite == 2)
-				key.cancel();
-			
+			client.close();
+			key.cancel();
 		} else
 		{
-			client.register(challengeSelector, SelectionKey.OP_READ);
+			if (isFinishied)
+			{
+				
+				lastWrite++;
+			/*if (lastWrite == 2)
+				key.cancel();*/
+				
+			} else
+			{
+				
+				
+				client.register(challengeSelector, SelectionKey.OP_READ);
+				
+			}
 		}
 	}
 	
