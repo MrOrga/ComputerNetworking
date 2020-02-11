@@ -23,7 +23,7 @@ public class SelectorT implements Runnable
 	private ByteBuffer toSend;
 	private String username;
 	private static UdpListener udpListener;
-	
+	private Controller controllerHome;
 	
 	public void setEvent(ActionEvent event)
 	{
@@ -40,11 +40,12 @@ public class SelectorT implements Runnable
 		return obj;
 	}
 	
-	public SelectorT(JsonObj obj, ControllerLogin controllerLogin, ActionEvent event)
+	public SelectorT(JsonObj obj, ControllerLogin controllerLogin, ActionEvent event, Controller controllerHome)
 	{
 		this.controllerLogin = controllerLogin;
 		this.obj = obj;
 		this.event = event;
+		this.controllerHome = controllerHome;
 	}
 	
 	public void setUserhome(Userhome userhome)
@@ -89,6 +90,21 @@ public class SelectorT implements Runnable
 			try
 			{
 				controllerLogin.goToHome(event);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	private void goToScore(ActionEvent event, int score, String error)
+	{
+		
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerLogin.goToScore(event, score, error);
 			} catch (Exception e)
 			{
 				e.printStackTrace();
@@ -148,6 +164,20 @@ public class SelectorT implements Runnable
 			try
 			{
 				userhome.showFriendListClick();
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	private void showError(String s)
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				controllerHome.showError(s);
 			} catch (Exception e)
 			{
 				e.printStackTrace();
@@ -223,12 +253,41 @@ public class SelectorT implements Runnable
 			
 			newWord(obj.getWord());
 		}
-		//operation error
-		else
+		//challenge is over
+		if (op.startsWith("213"))
+		{
+			goToScore(event, obj.getChallengePoints(), null);
+		}
+		
+		
+		//error code 4XX
+		//
+		if (op.startsWith("400"))
+		{
+			showError("Invalid user or password");
+			
+		}
+		if (op.startsWith("401"))
+		{
+			showError("User already logged");
+			
+		}
+		//friend is busy
+		if (op.startsWith("450"))
+		{
+			//todo visual feedback
+			UdpListener.resetAccept();
+		}
+		//friend already in a challenge
+		if (op.startsWith("450"))
 		{
 		
 		}
-		
+		//error on translation server
+		if (op.startsWith("451"))
+		{
+			goToScore(event, 0, "translation server error");
+		}
 		
 	}
 	
@@ -274,27 +333,6 @@ public class SelectorT implements Runnable
 					if (key.isReadable())
 					{
 						System.out.println("Reading some message from Server");
-						/*String res = "";
-						ByteBuffer buf = ByteBuffer.allocate(512);
-						if (key.attachment() != null)
-							res += (String) key.attachment();
-						
-						int len = buf.getInt();
-						
-						int read = socket.read(buf);
-						//some error
-						if (read == -1)
-							return;
-						int bufRemaining = buf.limit() - buf.position();
-						if (len > bufRemaining)
-						{
-							res += new String(buf.array(), buf.position(), bufRemaining, StandardCharsets.UTF_8);
-							socket.register(selector, SelectionKey.OP_READ, res);
-						} else
-						{
-							buf.flip();
-							hadleResponse(buf);
-						}*/
 						
 						SocketChannel client = (SocketChannel) key.channel();
 						
@@ -325,10 +363,6 @@ public class SelectorT implements Runnable
 							
 							len = buf.getInt();
 						}
-						/*if (read < len && len < 512)
-							read += client.read(buf);*/
-						
-						//System.out.println(len);
 						if (key.attachment() == null)
 						{
 							res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
@@ -366,9 +400,7 @@ public class SelectorT implements Runnable
 						}
 					}
 					
-					//System.out.print(new String(buf.array(), 0, buf.limit()));
-					//gestione esito op
-					//}
+					
 					if (key.isWritable())
 					{
 						
@@ -387,20 +419,18 @@ public class SelectorT implements Runnable
 							
 							bufflen.putInt(len);
 							bufflen.flip();
-							//bufflen = ByteBuffer.wrap(slen.getBytes());
+							
 							int byteWrite = socket.write(bufflen);
-							System.out.println(byteWrite);
-							//System.out.println(bufflen.getInt(0));
+							//System.out.println(byteWrite);
+							
 						}
 						socket.write(toSend);
-						//System.out.println(toSend.getInt(0));
-						//System.out.println(new String(toSend.array()));
+						
 						if (toSend.hasRemaining())
 							socket.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, null);
 						else
 						{
 							socket.register(selector, SelectionKey.OP_READ, null);
-							//socket.shutdownOutput();
 							
 						}
 					}

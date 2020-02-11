@@ -25,6 +25,13 @@ public class ControllerRegister
 	@FXML
 	private AnchorPane pane;
 	
+	private Controller controllerHome;
+	
+	public void setControllerHome(Controller controllerHome)
+	{
+		this.controllerHome = controllerHome;
+	}
+	
 	public void setPane(AnchorPane pane)
 	{
 		this.pane = pane;
@@ -38,7 +45,10 @@ public class ControllerRegister
 		AnchorPane newPane = load.load();
 		ControllerLogin c = load.getController();
 		c.setPane(pane);
+		c.setControllerHome(controllerHome);
+		controllerHome.clearError();
 		pane.getChildren().setAll(newPane);
+		
 	}
 	
 	public void backToHome(ActionEvent event) throws Exception
@@ -78,6 +88,14 @@ public class ControllerRegister
 			{
 				System.out.println("Registration success");
 				backToHome(event);
+			}
+			if (result == -400)
+			{
+				controllerHome.showError("Invalid user or password");
+			}
+			if (result == -401)
+			{
+				controllerHome.showError("User already exist");
 			}
 		} catch (Exception e)
 		{

@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -11,8 +10,10 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="background" stylesheets="@css.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="challengeController">
+<BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="background" stylesheets="@css.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ScoreController">
     <top>
         <AnchorPane BorderPane.alignment="CENTER">
             <BorderPane.margin>
@@ -30,7 +31,7 @@
     <bottom>
         <AnchorPane BorderPane.alignment="CENTER">
             <children>
-                <Button layoutX="280.0" layoutY="-4.0" mnemonicParsing="false" onAction="#sendClick" prefHeight="45.0" prefWidth="200.0" styleClass="black" text="Send">
+                <Button layoutX="280.0" layoutY="-4.0" mnemonicParsing="false" onAction="#backToHome" prefHeight="45.0" prefWidth="200.0" styleClass="black" text="Go to home">
                     <cursor>
                         <Cursor fx:constant="HAND" />
                     </cursor>
@@ -70,28 +71,20 @@
                         </HBox>
                     </children>
                 </VBox>
-                <AnchorPane layoutX="90.0" layoutY="73.0" prefHeight="350.0" prefWidth="625.0" styleClass="form">
+                <AnchorPane layoutX="85.0" layoutY="73.0" prefHeight="350.0" prefWidth="625.0" styleClass="form">
                     <children>
-                  <AnchorPane layoutX="191.0" layoutY="184.0">
-                     <children>
-                        <ImageView fitHeight="150.0" fitWidth="250.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@image/enflag.png" />
-                           </image>
-                        </ImageView>
-                              <TextField fx:id="wordEn" layoutX="10.0" layoutY="53.0" prefHeight="45.0" prefWidth="200.0" promptText="translation" styleClass="textfield" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane layoutX="190.0" layoutY="16.0">
-                     <children>
-                        <ImageView fitHeight="150.0" fitWidth="250.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@image/itflag.jpeg" />
-                           </image>
-                        </ImageView>
-                        <TextField fx:id="word" editable="false" layoutX="10.0" layoutY="53.0" prefHeight="45.0" prefWidth="200.0" promptText="loading word...please wait" styleClass="textfield" />
-                     </children>
-                  </AnchorPane>
+                        <AnchorPane layoutX="191.0" layoutY="184.0" />
+                        <AnchorPane layoutX="190.0" layoutY="16.0" />
+                  <Text fx:id="text" fill="#e50914" layoutX="60.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="YOUR SCORE IS: ">
+                     <font>
+                        <Font name="Calibri Bold" size="54.0" />
+                     </font>
+                  </Text>
+                  <Text fx:id="score" fill="#e50914" layoutX="462.0" layoutY="180.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="154.5458984375">
+                     <font>
+                        <Font name="Calibri" size="54.0" />
+                     </font>
+                  </Text>
                     </children>
                 </AnchorPane>
             </children>

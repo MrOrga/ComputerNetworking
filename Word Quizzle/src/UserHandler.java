@@ -6,6 +6,17 @@ public class UserHandler
 	private SocketChannel socket;
 	private ByteBuffer toSend;
 	private String username;
+	private boolean isBusy = false;
+	
+	public boolean isBusy()
+	{
+		return isBusy;
+	}
+	
+	public void setBusy(boolean busy)
+	{
+		isBusy = busy;
+	}
 	
 	public String getUsername()
 	{

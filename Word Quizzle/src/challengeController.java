@@ -1,8 +1,10 @@
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.nio.channels.ClosedChannelException;
 
@@ -17,7 +19,7 @@ public class challengeController
 	public AnchorPane challenge;
 	
 	@FXML
-	private Text word;
+	private TextField word;
 	
 	
 	public AnchorPane getChallenge()
@@ -25,7 +27,7 @@ public class challengeController
 		return challenge;
 	}
 	
-	public Text getWord()
+	public TextField getWord()
 	{
 		return word;
 	}
@@ -45,7 +47,7 @@ public class challengeController
 		friendUser.setText(s);
 	}
 	
-	public void acceptChallangeClick(ActionEvent event) throws ClosedChannelException
+	public void acceptChallengeClick(ActionEvent event) throws ClosedChannelException
 	{
 		ControllerLogin.setEvent(event);
 		ControllerLogin.sendRequest(new JsonObj("accept", friendUser.getText()));

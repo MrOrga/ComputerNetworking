@@ -17,6 +17,10 @@ public class Userhome
 	@FXML
 	public AnchorPane challenge;
 	
+	public void notificationReset()
+	{
+		challenge.getChildren().clear();
+	}
 	
 	public void challengeShow(String friend) throws Exception
 	{

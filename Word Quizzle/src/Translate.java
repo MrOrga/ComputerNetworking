@@ -6,15 +6,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Translate extends Thread
 {
 	private ArrayList<String> challengeWordEn;
 	private ArrayList<String> challengeWordIt;
 	private Challenge challenge;
+	//private Thread tChallenge;
 	
 	Translate(Challenge challenge)
 	{
+		
 		this.challenge = challenge;
 		this.challengeWordEn = challenge.getChallengeWordEn();
 		this.challengeWordIt = challenge.getChallengeWordIt();
@@ -26,7 +29,7 @@ public class Translate extends Thread
 		
 		try
 		{
-			String url = "https://api.mymemory.translated.net/get?q=";
+			String url = "https://aapi.mymemory.translated.net/get?q=";
 			URLConnection urlConnection;
 			for (int i = 0; i < challengeWordIt.size(); i++)
 			{
@@ -52,6 +55,8 @@ public class Translate extends Thread
 			System.out.println(challengeWordEn);
 		} catch (IOException e)
 		{
+			challenge.setError(new AtomicBoolean(true));
+			challenge.restoreMainSelectorKey();
 			e.printStackTrace();
 		}
 	}

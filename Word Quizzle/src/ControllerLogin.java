@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControllerLogin
 {
@@ -28,6 +29,23 @@ public class ControllerLogin
 	//public static Thread sel;
 	private static SelectorT selector;
 	private challengeController c;
+	private Controller controllerHome;
+	private static Stage stage;
+	
+	public static Stage getStage()
+	{
+		return stage;
+	}
+	
+	public static void setStage(Stage stage)
+	{
+		ControllerLogin.stage = stage;
+	}
+	
+	public void setControllerHome(Controller controllerHome)
+	{
+		this.controllerHome = controllerHome;
+	}
 	
 	public static void setEvent(ActionEvent event)
 	{
@@ -45,7 +63,8 @@ public class ControllerLogin
 		AnchorPane newPane = loader.load();
 		ControllerRegister c = loader.getController();
 		c.setPane(pane);
-		
+		c.setControllerHome(controllerHome);
+		controllerHome.clearError();
 		pane.getChildren().setAll(newPane);
 	}
 	
@@ -54,7 +73,7 @@ public class ControllerLogin
 		selector.sendRequest(obj);
 	}
 	
-	public static void setUserHome(Userhome userhome) throws ClosedChannelException
+	public static void setUserHome(Userhome userhome)
 	{
 		selector.setUserhome(userhome);
 	}
@@ -67,11 +86,12 @@ public class ControllerLogin
 		c = loader.getController();
 		c.setWord(word);
 		//get the Stage from the event
-		Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		
+		UdpListener.setCanAccept(new AtomicBoolean(false));
 		//Set the Scene
-		primaryStage.setScene(new Scene(home, 800, 600));
-		primaryStage.show();
+		stage.setScene(new Scene(home, 800, 600));
+		stage.show();
 		
 		System.out.println("Go to Challenge");
 	}
@@ -83,7 +103,7 @@ public class ControllerLogin
 	
 	public void goToUserHome(ActionEvent event) throws Exception
 	{
-		//load the Register.fxml
+		//load the userhome.fxml
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("userhome.fxml"));
 		Parent home = loader.load();
 		Userhome userhome = loader.getController();
@@ -99,9 +119,35 @@ public class ControllerLogin
 		System.out.println("Go to User Home");
 	}
 	
+	public void goToScore(ActionEvent event, int score, String error) throws Exception
+	{
+		//load the score.fxml
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("score.fxml"));
+		Parent home = loader.load();
+		ScoreController c = loader.getController();
+		if (error != null)
+		{
+			c.setText("Error on translation");
+			
+			c.setScore("");
+		} else
+		{
+			c.setScore(String.valueOf(score));
+		}
+		//get the Stage from the event
+		Stage primaryStage = stage;
+		
+		//Set the Scene
+		primaryStage.setScene(new Scene(home, 800, 600));
+		primaryStage.show();
+		
+		System.out.println("Go to Score");
+	}
+	
 	public void goToHome(ActionEvent event) throws Exception
 	{
-		//load the Register.fxml
+		//load the home.fxml
 		Parent home = FXMLLoader.load(getClass().getResource("home.fxml"));
 		
 		//get the Stage from the event
@@ -126,7 +172,7 @@ public class ControllerLogin
 			
 			//Gson gson = new Gson();
 			JsonObj obj = new JsonObj("login", usrname, password);
-			selector = new SelectorT(obj, this, event);
+			selector = new SelectorT(obj, this, event, controllerHome);
 			Thread sel = new Thread(selector);
 			sel.setDaemon(true);
 			sel.start();

@@ -9,7 +9,6 @@ import javafx.stage.Stage;
 
 public class Main extends Application
 {
-	Button button;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception
@@ -17,18 +16,6 @@ public class Main extends Application
 		Parent root = FXMLLoader.load(getClass().getResource("home.fxml"));
 		primaryStage.setTitle("Word Quizzle");
 		primaryStage.getIcons().add(new Image(("/image/wico.png")));
-		/*
-		button = new Button();
-		button.setText("Register");
-		
-		//creazione layout
-		StackPane layout = new StackPane();
-		layout.getChildren().add(button);
-		
-		//creazione scena
-		Scene scene = new Scene(layout, 300, 275);
-		//primaryStage.setScene(scene);*/
-		
 		primaryStage.setScene(new Scene(root, 800, 600));
 		primaryStage.show();
 	}

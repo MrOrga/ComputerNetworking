@@ -15,12 +15,20 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Challenge extends Thread
 {
 	private Selector selector;
-	private boolean isFinishied = false;
-	private int lastWrite = 0;
+	private volatile boolean isFinishied = false;
+	private volatile AtomicBoolean error = new AtomicBoolean(false);
+	
+	public void setError(AtomicBoolean error)
+	{
+		this.error = error;
+	}
+	
+	private volatile int lastWrite = 0;
 	private Selector challengeSelector;
 	private SocketChannel player1;
 	private SocketChannel player2;
@@ -63,7 +71,7 @@ public class Challenge extends Thread
 	
 	private static ArrayList<String> challengeWordEn;
 	private URL url = new URL("https://api.mymemory.translated.net/get?q=");
-	private URLConnection urlConnection;
+	
 	
 	public Challenge(Selector selector, ServerSocketChannel socket, DatabaseServer server, SocketChannel player1, SocketChannel player2, String user1, String user2) throws IOException
 	{
@@ -87,10 +95,10 @@ public class Challenge extends Thread
 		challengeWordEnPlayer1 = new ArrayList<String>();
 		challengeWordEnPlayer2 = new ArrayList<String>();
 		translate = new Translate(this);
+		
 		translate.start();
 		
 		challengeTimer = Executors.newScheduledThreadPool(1);
-		
 		
 	}
 	
@@ -145,10 +153,12 @@ public class Challenge extends Thread
 					clientEx.close();
 					if (clientEx == player1)
 					{
+						server.getSocketmap().get(userPlayer1).setBusy(false);
 						server.getDatabase().get(userPlayer1).logout();
 						server.getSocketmap().remove(userPlayer1);
 					} else
 					{
+						server.getSocketmap().get(userPlayer2).setBusy(false);
 						server.getDatabase().get(userPlayer2).logout();
 						server.getSocketmap().remove(userPlayer2);
 					}
@@ -157,9 +167,6 @@ public class Challenge extends Thread
 				
 				
 			}
-		} catch (SocketException e)
-		{
-		
 		} catch (IOException e)
 		{
 			e.printStackTrace();
@@ -202,6 +209,7 @@ public class Challenge extends Thread
 		{
 			System.out.println("Challenge is over");
 			//setting interest to 0
+			isFinishied = true;
 			if (player1.isConnected())
 			{
 				player1.keyFor(challengeSelector).interestOps(0);
@@ -213,38 +221,63 @@ public class Challenge extends Thread
 				lastWrite++;
 			try
 			{
-				if (translate.isAlive())
-					translate.join();
-				
-				System.out.println(challengeWordEn);
-				isFinishied = true;
-				//setting the result
-				challengeResult();
-				
-				
-				JsonObj obj1 = new JsonObj("213 challenge is over");
-				obj1.setChallengePoints(pointPlayer1);
-				if (player1.isConnected())
+				if (!error.get())
 				{
-					player1.register(challengeSelector, SelectionKey.OP_WRITE);
-					sendResponse(obj1, player1, userPlayer1);
-					player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
-				}
-				
-				obj1.setChallengePoints(pointPlayer2);
-				if (player2.isConnected())
+					if (translate.isAlive())
+						translate.join();
+					
+					System.out.println(challengeWordEn);
+					
+					//setting the result
+					challengeResult();
+					
+					
+					JsonObj obj1 = new JsonObj("213 challenge is over");
+					obj1.setChallengePoints(pointPlayer1);
+					if (player1.isConnected())
+					{
+						player1.register(challengeSelector, SelectionKey.OP_WRITE);
+						sendResponse(obj1, player1, userPlayer1);
+						
+						server.getSocketmap().get(userPlayer1).setBusy(false);
+					}
+					
+					obj1.setChallengePoints(pointPlayer2);
+					if (player2.isConnected())
+					{
+						player2.register(challengeSelector, SelectionKey.OP_WRITE);
+						sendResponse(obj1, player2, userPlayer2);
+						
+						server.getSocketmap().get(userPlayer2).setBusy(false);
+					}
+					
+					
+					GsonHandler handler = new GsonHandler();
+					handler.tofile(server, "db.json");
+				} else
 				{
-					player2.register(challengeSelector, SelectionKey.OP_WRITE);
-					sendResponse(obj1, player2, userPlayer2);
-					player2.keyFor(selector).interestOps(SelectionKey.OP_READ);
+					JsonObj obj1 = new JsonObj("451 challenge is over error on server");
+					if (player1.isConnected())
+					{
+						
+						player1.register(challengeSelector, SelectionKey.OP_WRITE);
+						sendResponse(obj1, player1, userPlayer1);
+						
+						server.getSocketmap().get(userPlayer1).setBusy(false);
+					}
+					if (player2.isConnected())
+					{
+						player2.register(challengeSelector, SelectionKey.OP_WRITE);
+						sendResponse(obj1, player2, userPlayer2);
+						
+						server.getSocketmap().get(userPlayer2).setBusy(false);
+					}
+					
+					System.out.println("Error server traslation");
 				}
-				
 				challengeSelector.wakeup();
-				
-				
-				GsonHandler handler = new GsonHandler();
-				handler.tofile(server, "db.json");
-				
+				player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
+				player2.keyFor(selector).interestOps(SelectionKey.OP_READ);
 				selector.wakeup();
 				
 				

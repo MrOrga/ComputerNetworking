@@ -7,11 +7,16 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UdpListener extends Thread
 {
 	private DatagramSocket socket;
 	private static Userhome userhome;
+	private volatile static AtomicBoolean canAccept = new AtomicBoolean(true);
 	
 	public Userhome getUserhome()
 	{
@@ -21,6 +26,16 @@ public class UdpListener extends Thread
 	public static void setUserhome(Userhome userhome)
 	{
 		UdpListener.userhome = userhome;
+	}
+	
+	public static AtomicBoolean getCanAccept()
+	{
+		return canAccept;
+	}
+	
+	public static void setCanAccept(AtomicBoolean canAccept)
+	{
+		UdpListener.canAccept = canAccept;
 	}
 	
 	//private port
@@ -73,18 +88,37 @@ public class UdpListener extends Thread
 			System.out.println(json);
 			try
 			{
-				challengeShow(obj.getFriend());
+				
+				if (canAccept.get())
+				{
+					canAccept.set(false);
+					challengeShow(obj.getFriend());
+					ScheduledExecutorService acceptTimer = Executors.newScheduledThreadPool(1);
+					acceptTimer.schedule(UdpListener::resetAccept, 15, TimeUnit.SECONDS);
+				}
+				
 			} catch (Exception e)
 			{
 				e.printStackTrace();
 			}
 			
 			
-			//send reply via TCP
-			//DatagramPacket reply = new DatagramPacket(buffer, buffer.length, clientHost, clientPort);
-			//socket.send(reply);
-			
-			
 		}
+	}
+	
+	public static void resetAccept()
+	{
+		Platform.runLater(() ->
+		{
+			try
+			{
+				userhome.notificationReset();
+				canAccept.set(true);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
+		
 	}
 }

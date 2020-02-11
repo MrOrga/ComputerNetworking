@@ -15,7 +15,7 @@ public interface Database extends Remote
 	 * @throws UserAlreadyExist se la sessione scelta è già piena
 	 * @throws RemoteException  se si verifica un errore remoto
 	 */
-	public int register(String user, String password) throws UserAlreadyExist, RemoteException, IOException;
+	public int register(String user, String password) throws IOException;
 	
 }
 

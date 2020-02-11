@@ -11,8 +11,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
 
 <BorderPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="background" stylesheets="@css.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="challengeController">
     <top>
@@ -52,8 +50,7 @@
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </BorderPane.margin>
             <children>
-                <AnchorPane id="challenge" fx:id="challenge" layoutX="215.0" layoutY="14.0" prefHeight="250.0" prefWidth="350.0" styleClass="center" visible="false" />
-                <VBox prefHeight="128.0" prefWidth="760.0" spacing="20.0" styleClass="top">
+                <VBox prefHeight="51.0" prefWidth="760.0" spacing="20.0" styleClass="top">
                     <children>
                         <HBox spacing="20.0">
                             <children>
@@ -73,14 +70,28 @@
                         </HBox>
                     </children>
                 </VBox>
-                <AnchorPane layoutX="90.0" layoutY="210.0" prefHeight="200.0" prefWidth="600.0" styleClass="form">
+                <AnchorPane layoutX="90.0" layoutY="73.0" prefHeight="350.0" prefWidth="625.0" styleClass="form">
                     <children>
-                        <Text fx:id="word" fill="WHITE" layoutX="3.0" layoutY="85.0" strokeType="OUTSIDE" strokeWidth="0.0" text="LOADING...please wait" textAlignment="CENTER" wrappingWidth="593.13671875">
-                            <font>
-                                <Font name="Calibri Bold" size="24.0" />
-                            </font>
-                        </Text>
-                        <TextField fx:id="wordEn" layoutX="200.0" layoutY="146.0" prefHeight="45.0" prefWidth="200.0" promptText="translation" styleClass="textfield" />
+                  <AnchorPane layoutX="191.0" layoutY="184.0">
+                     <children>
+                        <ImageView fitHeight="150.0" fitWidth="250.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@image/enflag.png" />
+                           </image>
+                        </ImageView>
+                              <TextField fx:id="wordEn" layoutX="10.0" layoutY="53.0" prefHeight="45.0" prefWidth="200.0" promptText="translation" styleClass="textfield" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane layoutX="190.0" layoutY="16.0">
+                     <children>
+                        <ImageView fitHeight="150.0" fitWidth="250.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@image/itflag.jpeg" />
+                           </image>
+                        </ImageView>
+                        <TextField fx:id="word" editable="false" layoutX="10.0" layoutY="53.0" prefHeight="45.0" prefWidth="200.0" promptText="loading word...please wait" styleClass="textfield" />
+                     </children>
+                  </AnchorPane>
                     </children>
                 </AnchorPane>
             </children>
