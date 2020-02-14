@@ -345,30 +345,9 @@ public class Challenge extends Thread
 					client.keyFor(challengeSelector).interestOps(0);
 					
 					server.logout(server.getUsername(client), client);
-					//client.register(challengeSelector, SelectionKey.OP_WRITE);
-					//sendResponse(obj1, player1, userPlayer1);
 					
 					server.getSocketmap().get(userPlayer1).setBusy(false);
 					selector.wakeup();
-					
-					/*Utils.User user = server.getUser(currentUser);
-					user.logout();
-					
-					if (player1.keyFor(challengeSelector) != null && client == player1.keyFor(challengeSelector).channel())
-					{
-						player1.register(challengeSelector, SelectionKey.OP_WRITE);
-						//player1.keyFor(challengeSelector).interestOps(SelectionKey.OP_WRITE);
-						
-						
-					} else if (player2.keyFor(challengeSelector) != null && client == player2.keyFor(challengeSelector).channel())
-					{
-						player2.register(challengeSelector, SelectionKey.OP_WRITE);
-						//player2.keyFor(challengeSelector).interestOps(SelectionKey.OP_WRITE);
-						
-						
-					}
-					sendResponse(new Utils.JsonObj("204 OK LOGOUT"), client, currentUser);
-					challengeSelector.wakeup();*/
 					
 					break;
 				case "word translation":

@@ -108,13 +108,13 @@ public class ControllerLogin
 		userhome.setUser();
 		UdpListener.setUserhome(userhome);
 		//get the Stage from the event
-		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		
 		//Set the Scene
 		stage.setScene(new Scene(home, 800, 600));
 		stage.show();
 		
-		System.out.println("Go to Utils.User Home");
+		System.out.println("Go to User Home");
 	}
 	
 	public void goToScore(ActionEvent event, int score, String eventChallenge) throws Exception
@@ -160,7 +160,7 @@ public class ControllerLogin
 		Parent home = FXMLLoader.load(getClass().getResource("/WQClient/FXML/home.fxml"));
 		
 		//get the Stage from the event
-		Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 		
 		//Set the Scene
 		stage.setScene(new Scene(home, 800, 600));

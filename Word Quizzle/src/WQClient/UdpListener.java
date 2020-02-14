@@ -21,6 +21,7 @@ public class UdpListener extends Thread
 	private static Userhome userhome;
 	private volatile static AtomicBoolean canAccept = new AtomicBoolean(true);
 	private static volatile boolean run = true;
+	public static ScheduledExecutorService acceptTimer;
 	
 	public static void setRun(boolean run)
 	{
@@ -105,7 +106,7 @@ public class UdpListener extends Thread
 				{
 					canAccept.set(false);
 					challengeShow(obj.getFriend());
-					ScheduledExecutorService acceptTimer = Executors.newScheduledThreadPool(1);
+					acceptTimer = Executors.newScheduledThreadPool(1);
 					acceptTimer.schedule(UdpListener::resetAccept, 15, TimeUnit.SECONDS);
 				}
 				
@@ -126,8 +127,10 @@ public class UdpListener extends Thread
 			{
 				if (!canAccept.get())
 				{
+					
 					userhome.notificationReset();
 					canAccept.set(true);
+					acceptTimer.shutdownNow();
 				}
 				
 			} catch (Exception e)

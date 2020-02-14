@@ -69,7 +69,7 @@ public class ScoreController
 		primaryStage.setScene(new Scene(home, 800, 600));
 		primaryStage.show();
 		
-		System.out.println("Go to Utils.User Home");
+		System.out.println("Go to User Home");
 		
 	}
 	

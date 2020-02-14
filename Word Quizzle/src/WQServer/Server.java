@@ -43,8 +43,8 @@ public class Server extends RemoteServer implements Database, Serializable
 		socketmap = new ConcurrentHashMap<String, UserHandler>();
 		usersocketmap = new ConcurrentHashMap<SocketChannel, String>();
 		myQueueChallenge = new LinkedBlockingQueue<Runnable>();
-		//maxthread 50, max time in idle 2minutes
-		challengeExecutor = new ThreadPoolExecutor(0, 100, 2, TimeUnit.MINUTES, myQueueChallenge);
+		//maxthread 100 for challenge
+		challengeExecutor = new ThreadPoolExecutor(100, 100, 2, TimeUnit.MINUTES, myQueueChallenge);
 	}
 	
 	
@@ -53,16 +53,13 @@ public class Server extends RemoteServer implements Database, Serializable
 		if (password == null || user == null)
 		{
 			
-			//obj = new Utils.JsonObj("400 IllegalArgumentException");
 			return -400;
 			
 		}
 		if (database.containsKey(user))
 		{
-			//obj = new Utils.JsonObj("401 UserAlreadyExist");
 			
 			return -401;
-			
 			
 		}
 		
@@ -127,10 +124,14 @@ public class Server extends RemoteServer implements Database, Serializable
 	
 	public void addFriend(String username, String friend, SocketChannel client) throws IOException
 	{
-		//check if the user and the user of a friend exist
-		if ((!database.containsKey(username) || !(database.containsKey(friend))))
+		if (username.equals(friend))
 		{
-			sendResponse(new JsonObj("410 Utils.User not exist"), client, currentUser);
+			sendResponse(new JsonObj("412 Can't add yourself"), client, currentUser);
+		}
+		//check if the user and the user of a friend exist
+		else if ((!database.containsKey(username) || !(database.containsKey(friend))))
+		{
+			sendResponse(new JsonObj("410 User not exist"), client, currentUser);
 			
 		} else
 		{
@@ -146,7 +147,7 @@ public class Server extends RemoteServer implements Database, Serializable
 				//setting friendship between user
 				database.get(username).setFriend(friend);
 				database.get(friend).setFriend(username);
-				sendResponse(new JsonObj("202 Utils.User added to friend list"), client, currentUser);
+				sendResponse(new JsonObj("202 User added to friend list"), client, currentUser);
 				GsonHandler handler = new GsonHandler();
 				handler.tofile(this, "db.json");
 			}
@@ -332,12 +333,10 @@ public class Server extends RemoteServer implements Database, Serializable
 			{
 				key.cancel();
 				return;
-				/*key.cancel();
-				client.close();*/
+				
 			}
 		}
 		
-		//System.out.println(len);
 		if (key.attachment() == null)
 		{
 			res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);
@@ -380,27 +379,33 @@ public class Server extends RemoteServer implements Database, Serializable
 	//sending challenge with udp to the user
 	private void challenge(String friend, SocketChannel client) throws IOException
 	{
-		System.out.println("sending challenge");
-		UserHandler handler = socketmap.get(friend);
-		Gson gson = new Gson();
-		SocketChannel friendSocket = handler.getSocket();
-		InetSocketAddress addressFriend = (InetSocketAddress) (friendSocket.getRemoteAddress());
-		InetAddress address = addressFriend.getAddress();
-		int port = addressFriend.getPort();
-		
-		System.out.println("UDP port client: " + port);
-		//UDP request
-		
-		DatagramSocket socketUDP = new DatagramSocket();
-		
-		//setting challange request
-		obj = new JsonObj("challenge", currentUser);
-		String json = gson.toJson(obj);
-		
-		DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, port);
-		
-		socketUDP.send(request);
-		System.out.println("challenge sent");
+		if (currentUser.equals(friend))
+		{
+			sendResponse(new JsonObj("413 Can't challenge yourself"), client, currentUser);
+		} else
+		{
+			System.out.println("sending challenge");
+			UserHandler handler = socketmap.get(friend);
+			Gson gson = new Gson();
+			SocketChannel friendSocket = handler.getSocket();
+			InetSocketAddress addressFriend = (InetSocketAddress) (friendSocket.getRemoteAddress());
+			InetAddress address = addressFriend.getAddress();
+			int port = addressFriend.getPort();
+			
+			System.out.println("UDP port client: " + port);
+			//UDP request
+			
+			DatagramSocket socketUDP = new DatagramSocket();
+			
+			//setting challange request
+			obj = new JsonObj("challenge", currentUser);
+			String json = gson.toJson(obj);
+			
+			DatagramPacket request = new DatagramPacket(json.getBytes(), json.getBytes().length, address, port);
+			
+			socketUDP.send(request);
+			System.out.println("challenge sent");
+		}
 		
 	}
 	
@@ -425,22 +430,14 @@ public class Server extends RemoteServer implements Database, Serializable
 		UserHandler userCurrent = socketmap.get(friend);
 		if (!userCurrent.isBusy() && !userFriend.isBusy())
 		{
-			System.out.println("WQServer.Challenge accepted");
+			System.out.println("Challenge accepted");
 			
 			
 			SocketChannel friendSocket = userFriend.getSocket();
 			
-			//geting the selection key
-			SelectionKey keyClient = client.keyFor(selector);
-			SelectionKey keyFriend = friendSocket.keyFor(selector);
-			//setting interest of the keys to 0
-			
-			//keyClient.interestOps(0);
-			//keyFriend.interestOps(0);
 			
 			userFriend.setBusy(true);
 			userCurrent.setBusy(true);
-			
 			
 			Challenge challenge = new Challenge(selector, socket, this, client, friendSocket, currentUser, friend);
 			Future future = challengeExecutor.submit(challenge);
@@ -525,7 +522,7 @@ public class Server extends RemoteServer implements Database, Serializable
 			Registry r = LocateRegistry.getRegistry(port);
 			/* Pubblicazione dello stub nel registry */
 			r.rebind(Database.SERVICE_NAME, stub);
-			System.out.println("WQServer.Server ready");
+			System.out.println("Server ready");
 		}
 		/* If any communication failures occur... */ catch (RemoteException e)
 		{

@@ -9,7 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-public class Main extends Application
+public class Client extends Application
 {
 	
 	@Override

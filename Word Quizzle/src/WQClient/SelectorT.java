@@ -1,7 +1,6 @@
 package WQClient;
 
 import Utils.*;
-import Utils.Attachment;
 import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -359,11 +358,23 @@ public class SelectorT implements Runnable
 		}
 		if (op.startsWith("401"))
 		{
-			showError("Utils.User already logged");
+			showError("User already logged");
 			
 		}
 		//already friend
 		if (op.startsWith("411"))
+		{
+			
+			errorPopUp(event, op.substring(4));
+		}
+		//user try to add himself
+		if (op.startsWith("412"))
+		{
+			
+			errorPopUp(event, op.substring(4));
+		}
+		//user try to challenge himself
+		if (op.startsWith("413"))
 		{
 			
 			errorPopUp(event, op.substring(4));
@@ -427,7 +438,7 @@ public class SelectorT implements Runnable
 					}
 					if (key.isReadable())
 					{
-						System.out.println("Reading some message from WQServer.Server");
+						System.out.println("Reading some message from Server");
 						
 						SocketChannel client = (SocketChannel) key.channel();
 						
@@ -438,7 +449,7 @@ public class SelectorT implements Runnable
 						int len = 0;
 						if (key.attachment() != null)
 						{
-							System.out.println("Utils.Attachment not null");
+							System.out.println("Attachment not null");
 							attachment = (Attachment) key.attachment();
 							len = attachment.getLen();
 						}

@@ -24,12 +24,6 @@ public class Sort
 	public void sort()
 	{
 		
-	/*	if (arr == null || arr.size() == 0)
-		{
-			return;
-		}
-		users = users;
-		scores = arr;*/
 		quickSort(0, scores.size() - 1);
 	}
 	

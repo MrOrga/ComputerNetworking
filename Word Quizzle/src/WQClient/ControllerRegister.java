@@ -97,7 +97,7 @@ public class ControllerRegister
 			}
 			if (result == -401)
 			{
-				controllerHome.showError("Utils.User already exist");
+				controllerHome.showError("User already exist");
 			}
 		} catch (Exception e)
 		{
