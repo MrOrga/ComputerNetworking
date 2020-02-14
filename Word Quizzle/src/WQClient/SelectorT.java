@@ -276,8 +276,6 @@ public class SelectorT implements Runnable
 		{
 			this.setUsername(obj.getUsername());
 			goToUserHome();
-			//show friend list
-			//userhome.showFriend();
 			
 			//start UDP thread listener
 			InetSocketAddress myAddress = (InetSocketAddress) socket.getLocalAddress();
@@ -285,9 +283,6 @@ public class SelectorT implements Runnable
 			udpListener = new UdpListener(myAddress.getPort());
 			udpListener.setDaemon(true);
 			udpListener.start();
-			
-			
-			//udpListener.setUserhome(userhome);
 			
 		}
 		//add friend
@@ -415,8 +410,7 @@ public class SelectorT implements Runnable
 			Gson gson = new Gson();
 			String json = gson.toJson(obj);
 			System.out.println(json);
-			//String jsend = new String(json, StandardCharsets.UTF_8);
-			//ByteBuffer toSend = ByteBuffer.wrap(gson.toJson(obj).getBytes());
+			
 			toSend = ByteBuffer.wrap(json.getBytes());
 			if (!connected)
 				socket.register(selector, SelectionKey.OP_CONNECT);

@@ -129,6 +129,7 @@ public class Challenge extends Thread
 			sendResponse(obj, client, userPlayer1);
 			sendResponse(obj, client2, userPlayer2);
 			challengeSelector.wakeup();
+			//setting timer for challenge
 			challengeTimer.schedule(this::restoreMainSelectorKey, 120, TimeUnit.SECONDS);
 			
 			while (lastWrite != 2)
@@ -156,6 +157,7 @@ public class Challenge extends Thread
 					challengeSelector.selectedKeys().clear();
 				} catch (SocketException e)
 				{
+					//closign connection and logout of the user if there is some problem or crash with the connection
 					SocketChannel clientEx = (SocketChannel) currentKey.channel();
 					clientEx.close();
 					if (clientEx == player1)
@@ -180,6 +182,7 @@ public class Challenge extends Thread
 		}
 	}
 	
+	//setting ByteByffer to send response to the client and register WRITE Operation
 	private void sendResponse(JsonObj obj, SocketChannel client, String user) throws IOException
 	{
 		this.obj = obj;
@@ -193,6 +196,7 @@ public class Challenge extends Thread
 		
 	}
 	
+	//function to generate 10 random word for the challenge
 	private ArrayList<String> challengeWordGenerator(List<String> list)
 	{
 		ArrayList<String> challengeList = new ArrayList<String>();
@@ -209,14 +213,14 @@ public class Challenge extends Thread
 		
 	}
 	
-	
+	//function to end the challenge and restore the key in the main selector
 	public void restoreMainSelectorKey()
 	{
 		challengeTimer.shutdown();
 		if (!isFinishied)
 		{
 			System.out.println("Challenge is over");
-			//setting interest to 0
+			//setting interest to 0 or inc lastwrite for the termination condition of the thread
 			isFinishied = true;
 			if (player1.isConnected())
 			{
@@ -242,6 +246,7 @@ public class Challenge extends Thread
 					
 					JsonObj obj1 = new JsonObj("213 challenge is over");
 					obj1.setPoints(pointPlayer1);
+					//if the player is still connected sending the result of the challenge
 					if (player1.isConnected())
 					{
 						player1.register(challengeSelector, SelectionKey.OP_WRITE);
@@ -259,11 +264,12 @@ public class Challenge extends Thread
 						server.getSocketmap().get(userPlayer2).setBusy(false);
 					}
 					
-					
+					//update the file for persstance
 					GsonHandler handler = new GsonHandler();
 					handler.tofile(server, "db.json");
 				} else
 				{
+					//if there is some error in the server sendind the message to the client
 					JsonObj obj1 = new JsonObj("451 challenge is over error on server");
 					if (player1.isConnected())
 					{
@@ -283,6 +289,7 @@ public class Challenge extends Thread
 					
 					System.out.println("Error server traslation");
 				}
+				//setting the interest of the main selector
 				challengeSelector.wakeup();
 				if (player1.isConnected())
 					player1.keyFor(selector).interestOps(SelectionKey.OP_READ);
@@ -326,6 +333,7 @@ public class Challenge extends Thread
 		server.getUser(userPlayer2).addPoint(pointPlayer2);
 	}
 	
+	//handle the operation logout or wordtranlation after read
 	private void handleOperation(String json, SocketChannel client)
 	{
 		
@@ -406,6 +414,7 @@ public class Challenge extends Thread
 		
 	}
 	
+	//fucntion used to send the new word to the client
 	private void sendNewWord(String currentUser, SocketChannel client, String word) throws IOException
 	{
 		JsonObj obj = new JsonObj("211 next word");
@@ -456,12 +465,9 @@ public class Challenge extends Thread
 			{
 				
 				lastWrite++;
-			/*if (lastWrite == 2)
-				key.cancel();*/
 				
 			} else
 			{
-				
 				
 				client.register(challengeSelector, SelectionKey.OP_READ);
 				
@@ -498,8 +504,6 @@ public class Challenge extends Thread
 			len = buf.getInt();
 		}
 		
-		
-		//System.out.println(len);
 		if (key.attachment() == null)
 		{
 			res = new String(buf.array(), buf.position(), buf.remaining(), StandardCharsets.UTF_8);

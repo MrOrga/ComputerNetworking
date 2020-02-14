@@ -144,9 +144,6 @@ public class ControllerLogin
 		{
 			c.setScore(String.valueOf(score));
 		}
-		//get the Stage from the event
-		
-		
 		//Set the Scene
 		stage.setScene(new Scene(home, 800, 600));
 		stage.show();

@@ -45,6 +45,7 @@ public class Server extends RemoteServer implements Database, Serializable
 		myQueueChallenge = new LinkedBlockingQueue<Runnable>();
 		//maxthread 100 for challenge
 		challengeExecutor = new ThreadPoolExecutor(100, 100, 2, TimeUnit.MINUTES, myQueueChallenge);
+		
 	}
 	
 	
@@ -82,7 +83,7 @@ public class Server extends RemoteServer implements Database, Serializable
 		System.out.println(username);
 		if (!database.containsKey(username))
 		{
-			obj = new JsonObj("400 IllegalArgumentException");
+			obj = new JsonObj("400 IllegalArgument");
 			sendResponse(obj, client, currentUser);
 		}
 		
@@ -102,12 +103,12 @@ public class Server extends RemoteServer implements Database, Serializable
 				JsonObj obj1 = new JsonObj("200 OK LOGIN");
 				obj1.setUsername(username);
 				sendResponse(obj1, client, currentUser);
-				handler.tofile(this, "db.json");
+				//handler.tofile(this, "db.json");
 			}
 			
 		} else
 		{
-			obj = new JsonObj("400 IllegalArgumentException");
+			obj = new JsonObj("400 IllegalArgument");
 			sendResponse(obj, client, currentUser);
 		}
 		
@@ -164,6 +165,7 @@ public class Server extends RemoteServer implements Database, Serializable
 		
 	}
 	
+	//get the friend list and calculate the leaderboard thanks to Sort Class that implement a modify version of QuickSort
 	private void friendlistRank(String username, SocketChannel client) throws IOException
 	{
 		Vector<String> friends = database.get(username).getFriend();
@@ -299,6 +301,7 @@ public class Server extends RemoteServer implements Database, Serializable
 		}
 	}
 	
+	//read operation from the socket if there is more to read register another read and setting attachment
 	private void read(SelectionKey key) throws IOException
 	{
 		SocketChannel client = (SocketChannel) key.channel();
@@ -424,6 +427,7 @@ public class Server extends RemoteServer implements Database, Serializable
 		return database.get(user);
 	}
 	
+	//after the server receive the accept of the challenge creating a new challenge setbusy of player
 	private void acceptChallenge(String currentUser, String friend, SocketChannel client) throws IOException
 	{
 		UserHandler userFriend = socketmap.get(friend);
@@ -440,6 +444,7 @@ public class Server extends RemoteServer implements Database, Serializable
 			userCurrent.setBusy(true);
 			
 			Challenge challenge = new Challenge(selector, socket, this, client, friendSocket, currentUser, friend);
+			//submit the challenge to the executor that return a Future needed to check if the challange is started or is the queque
 			Future future = challengeExecutor.submit(challenge);
 			if (challengeExecutor.getQueue().contains(future))
 			{
@@ -558,6 +563,7 @@ public class Server extends RemoteServer implements Database, Serializable
 				selector.selectedKeys().clear();
 			} catch (IOException ex)
 			{
+				//remove key and logout of user if there is some problems with the connection
 				currentUser = usersocketmap.get((SocketChannel) currentKey.channel());
 				currentKey.cancel();
 				socketmap.remove(currentUser);
